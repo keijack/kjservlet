@@ -54,10 +54,6 @@ public final class KJServletRuntime {
 	    engine = new ScriptEngineManager().getEngineByName("js");
 	    engine.put("__kj_nashorn_engine__", engine);
 
-	    String kjServletJarPath = this.getClass().getResource(this.getClass().getSimpleName() + ".class").getPath().replace(this.getClass().getName().replaceAll("\\.", "/") + ".class", "")
-		    .toString();
-	    engine.put("__kj_nashorn_classpath__", kjServletJarPath);
-
 	    String classPath = this.getClass().getClassLoader().getResource("").getPath().toString();
 	    engine.put("$classpath", classPath);
 
@@ -75,8 +71,7 @@ public final class KJServletRuntime {
 
 	    engine.eval(reader.read("_kjservlet_http_internal_.js"));
 	} catch (Exception e) {
-	    e.printStackTrace();
-	    throw new RuntimeException(e);
+	    throw new NashornJSException(e);
 	}
     }
 
@@ -85,15 +80,6 @@ public final class KJServletRuntime {
 	    ((Invocable) engine).invokeFunction("_kj_dispatch_and_run_", request, response);
 	} catch (Exception e) {
 	    throw new ServletException(e);
-	}
-    }
-
-    public void invokeFunction(String filePath, String function) {
-	try {
-	    engine.eval(new FileReader(new File(filePath)));
-	    ((Invocable) engine).invokeFunction(function);
-	} catch (Exception e) {
-	    throw new RuntimeException(e);
 	}
     }
 
