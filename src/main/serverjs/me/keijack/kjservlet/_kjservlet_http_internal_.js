@@ -249,7 +249,10 @@ var _kj_dispatch_and_run_ = (function() {
 			return;
 
 		if (!result.hasOwnProperty("_content_type"))
-			result = $renderer.json(result);
+			if (typeof result == "object")
+				result = $renderer.json(result);
+			else
+				result = $renderer.text(result);
 
 		if (result.headers) {
 			for ( var name in result.headers) {
@@ -341,6 +344,7 @@ var _kj_dispatch_and_run_ = (function() {
 		res.contentType;
 		res.headers = {};
 		res.header = res.headers;
+		res.model = {};
 		res.sent = false;
 		res.checkSent = function() {
 			if (res.sent)
