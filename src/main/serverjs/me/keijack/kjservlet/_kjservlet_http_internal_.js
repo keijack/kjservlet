@@ -1,23 +1,69 @@
-var _kj_app_default_conf_ = {
-	fileHome : "classpath:",
-	fileSuffix : ".js",
-	controller : {
-		encoding : "utf8",
-		pkg : "",
-		suffix : "",
-		parameterJSONFriendly : true,
-	},
-	view : {
-		resolver : "jsp",
-		prefix : "",
-		suffix : ".jsp",
-	}
-};
+(function() {
+	var appEnvDefaultConf = {
+		fileHome : "classpath:",
+		fileSuffix : ".js",
+		controller : {
+			encoding : "utf8",
+			pkg : "",
+			suffix : "",
+			parameterJSONFriendly : true,
+		},
+		view : {
+			resolver : "jsp",
+			prefix : "",
+			suffix : ".jsp",
+		}
+	};
 
-_kj_util_.json.extand($appEnv, _kj_app_default_conf_);
+	_kj_util_.json.extand($appEnv, appEnvDefaultConf);
+	$appEnv.res = {
+		"_starts_" : [],
+		"_ends_" : [],
+		"_includes_" : [],
+		"_equals_" : [],
+		"matches" : function(path) {
+			if (!path || typeof path != "string")
+				return false;
+			path = path.replaceAll("//", "/");
+			for (var i = 0; i < this._starts_.length; i++) {
+				if (path.startsWith(this._starts_[i]))
+					return true;
+			}
+			for (var i = 0; i < this._ends_.length; i++) {
+				if (path.endsWith(this._ends_[i]))
+					return true;
+			}
+			for (var i = 0; i < this._includes_.length; i++) {
+				if (path.indexOf(this._includes_[i]) >= 0)
+					return true;
+			}
+			for (var i = 0; i < this._equals_.length; i++) {
+				if (path == this._equals_[i])
+					return true;
+			}
+		}
+	};
+	if ($appEnv.resources) {
+		var resPatterns = _kj_util_.array.getArray($appEnv.resources);
+		for (var i = 0; i < resPatterns.length; i++) {
+			var pattern = resPatterns[i];
+			if (!pattern || typeof pattern != "string")
+				continue;
+			if (pattern.startsWith("*") && pattern.endsWith("*")) {
+				$appEnv.res._includes_.push(pattern.replaceAll("*", "").replaceAll("//", "/"));
+			} else if (pattern.startsWith("*")) {
+				$appEnv.res._ends_.push(pattern.replaceAll("*", "").replaceAll("//", "/"));
+			} else if (pattern.endsWith("*")) {
+				$appEnv.res._starts_.push(pattern.replaceAll("*", "").replaceAll("//", "/"));
+			} else {
+				$appEnv.res._equlas_.push(pattern.replaceAll("*", "").replaceAll("//", "/"));
+			}
+		}
+	}
+
+})();
 
 var $renderer = (function() {
-	var logTagName = "me.keijack.servlet._http_internal_";
 	return {
 		render : function(contentType, content, headers) {
 			return {
@@ -87,7 +133,6 @@ var $renderer = (function() {
 					}
 					return $appEnv.view.resolver(url, data, headers);
 				} catch (err) {
-					$log.e(logTagName, "render error!", err);
 					return this.error(500, err);
 				}
 			} else if ($appEnv.view.resolver == "jsp") {
@@ -103,7 +148,6 @@ var $renderer = (function() {
 					var html = stringWriter.toString();
 					return this.html(html, headers);
 				} catch (err) {
-					$log.e(logTagName, "freemarker error!", err);
 					return this.error(500, err);
 				}
 			} else if ($appEnv.view.resolver == "velocity") {
@@ -120,7 +164,6 @@ var $renderer = (function() {
 					var html = stringWriter.toString();
 					return this.html(html, headers);
 				} catch (err) {
-					$log.e(logTagName, "velocity error!", err);
 					return this.error(500, err);
 				}
 			} else {
@@ -141,8 +184,7 @@ var _kj_dispatch_and_run_ = (function() {
 	var JavaScriptContext = Java.type("javax.script.ScriptContext");
 	var JavaFileReader = Java.type("java.io.FileReader");
 	var JavaFile = Java.type("java.io.File");
-
-	var logTagName = "me.keijack.servlet._http_internal_";
+	var JavaFileInputStream = Java.type("java.io.FileInputStream")
 
 	/**
 	 * default configurations
@@ -154,8 +196,34 @@ var _kj_dispatch_and_run_ = (function() {
 		suffix : $appEnv.controller.suffix,
 	};
 
+	var getCtxUri = function(request) {
+		var ctx = request.getContextPath();
+		if (ctx === "/")
+			return request.getRequestURI();
+		else
+			return request.getRequestURI().replace(ctx, "");
+	}
+
 	var fun = function(request, response) {
+		var ctxUri = getCtxUri(request);
+		if ($appEnv.res.matches(ctxUri)) {
+			// static files
+			try {
+				var resPath = request.getServletContext().getRealPath(ctxUri);
+				var fin = new JavaFileInputStream(new JavaFile(resPath));
+				var byteRead = 0;
+				var buff = new JavaByteArray(1024);
+				while ((byteRead = fin.read(buff)) > 0) {
+					response.getOutputStream().write(buff, 0, byteRead);
+				}
+				fin.close();
+			} catch (err) {
+				response.sendError(500, err);
+			}
+			return;
+		}
 		var req = wrapRequest(request);
+		req.ctxUri = ctxUri;
 		var res = wrapResponse(response);
 		req.controller = getController(req);
 		if (!req.controller.func) {
@@ -175,13 +243,10 @@ var _kj_dispatch_and_run_ = (function() {
 		__kj_nashorn_engine__.eval(__kj_nashorn_inner_reader__.read("_kjservlet_ctx_internal_.js"), ctx);
 
 		var filePath = req.controller.pkg;
-		$log.d(logTagName, "controller path: " + filePath);
 		if (filePath) {
 			try {
-				$log.d(logTagName, "classpath::" + $classpath);
 				__kj_nashorn_engine__.eval(new JavaFileReader(new JavaFile($classpath + filePath + $appEnv.fileSuffix)), ctx);
 			} catch (err) {
-				$log.e(logTagName, "import error::" + err);
 				res.sendError(500, err);
 				return;
 			}
@@ -195,7 +260,6 @@ var _kj_dispatch_and_run_ = (function() {
 				return;
 			}
 		} catch (err) {
-			$log.e(logTagName, "run error::" + err);
 			res.sendError(404, err);
 			return;
 		}
@@ -295,7 +359,7 @@ var _kj_dispatch_and_run_ = (function() {
 		};
 
 		var ctl = {};
-		var path = req.servletPath;
+		var path = req.ctxUri;
 		// remove suffix
 		var suffix = httpConf.suffix;
 		if (suffix) {
@@ -323,13 +387,14 @@ var _kj_dispatch_and_run_ = (function() {
 		} else {
 			var nodes = path.split("/");
 			var pathWithoutValues = "";
-			for ( var i in nodes) {
+			for (var i = 0; i < nodes.length; i++) {
 				var node = nodes[i];
 				if (node && node.indexOf(":") < 0) {
 					pathWithoutValues += "/" + node;
 				}
 			}
 			idx = pathWithoutValues.lastIndexOf("/");
+
 			ctl.pkg = formatPkg(httpConf.pkg + pathWithoutValues.substring(0, idx));
 			ctl.func = pathWithoutValues.substring(idx + 1);
 			ctl.args = [];
@@ -432,6 +497,26 @@ var _kj_dispatch_and_run_ = (function() {
 		req.pathValues = {};
 		req.pathValue = req.pathValues;
 
+		req.setAttribute = function(name, val) {
+			this.oriRequest.setAttribute(name, val);
+		};
+		req.setAttr = req.setAttribute;
+		req.getAttribute = function(name, defaultVal) {
+			var val = this.oriRequest.getAttribute(name);
+			if (val)
+				return val;
+			else if (defaultVal)
+				return defaultVal;
+			else
+				return val;
+		};
+		req.getAttr = req.getAttribute;
+		req.removeAttribute = function(name) {
+			this.oriRequest.removeAttribute(name);
+		}
+		req.removeAttr = req.removeAttribute;
+		req.rmAttr = req.removeAttribute;
+
 		// headers
 		var headerNames = request.getHeaderNames();
 		while (headerNames.hasMoreElements()) {
@@ -511,7 +596,7 @@ var _kj_dispatch_and_run_ = (function() {
 			try {
 				req.data = JSON.parse(req.readRequestBody());
 			} catch (err) {
-				$log.e(logTagName, "JSON.parse error!", err);
+
 			}
 		} else {
 			req.readRequestBody();
