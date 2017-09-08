@@ -84,9 +84,8 @@ _kj_util_.func.getAnnotations = function(func) {
 		sourceCode = sourceCode.substring(2); // remove "@
 		var rightQuoteIdx = sourceCode.indexOf(quoteChar);
 		var tag = sourceCode.substring(0, rightQuoteIdx);
-		if (!tag)
-			continue;
-		annos.push("@" + tag);
+		if (tag)
+			annos.push("@" + tag);
 		sourceCode = sourceCode.substring(tag.length + 1).trim(); // remove "
 		if (sourceCode.startsWith(';')) // remove ;
 			sourceCode = sourceCode.substring(1).trim();
