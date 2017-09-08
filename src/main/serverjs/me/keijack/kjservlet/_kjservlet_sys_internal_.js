@@ -16,7 +16,7 @@ var imports = (function() {
 			// internal components
 			var path = filePath;
 			if (path === "$db") {
-				__kj_nashorn_engine__.eval(__kj_nashorn_inner_reader__.read("_kjservlet_db_internal_.js"));
+				__kj_nashorn_engine__.eval(__kj_nashorn_inner_reader__.read("_kjservlet_db_plugin_.js"));
 				return;
 			} else if (path.startsWith("kjinner:")) {
 				path = path.replace("kjinner:", "");

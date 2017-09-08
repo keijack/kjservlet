@@ -15,7 +15,7 @@ var imports = (function() {
 		function doImport(filePath) {
 			var path = filePath;
 			if (path === "$db") {
-				__kj_nashorn_engine__.eval(__kj_nashorn_inner_reader__.read("_kjservlet_db_internal_.js"), __kj_nashorn_req_ctx__);
+				__kj_nashorn_engine__.eval(__kj_nashorn_inner_reader__.read("_kjservlet_db_plugin_.js"), __kj_nashorn_req_ctx__);
 				return;
 			} else if (path.startsWith("kjinner:")) {
 				path = path.replace("kjinner:", "");
