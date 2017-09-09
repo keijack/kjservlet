@@ -1,4 +1,4 @@
-package me.keijack.kjservlet;
+package org.keijack.kjservlet;
 
 public class NashornJSException extends RuntimeException {
 

@@ -1,4 +1,4 @@
-package me.keijack.kjservlet;
+package org.keijack.kjservlet;
 
 import java.io.IOException;
 

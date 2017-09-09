@@ -2,7 +2,7 @@ var $logFac = {
 	getLogger : function(logType) {
 		var type = logType ? logType.toLowerCase() : "";
 
-		var defaultTag = "me.keijack.kjservlet.nashorn.universe";
+		var defaultTag = "org.keijack.kjservlet.nashorn.universe";
 
 		var objToStr = function(obj) {
 			var str = obj.toString();
@@ -21,7 +21,7 @@ var $logFac = {
 				return error;
 			} else {
 				var errorMsg = objToStr(error);
-				var JavaNashornException = Java.type("me.keijack.kjservlet.NashornJSException");
+				var JavaNashornException = Java.type("org.keijack.kjservlet.NashornJSException");
 				return new JavaNashornException(errorMsg);
 			}
 		};
