@@ -5,7 +5,8 @@
 
  This document is a reference guide to KJServlet framework features. Because of this is a very new framework and written by one person (which is me), so there might be some bugs that I have not discovered. If you find some problems, or have any questions or suggestions, or you want to get involved in this project, please let me know, here is my email: keijack.wu#gmail.com (please change # to @)
  
- ## Getting Start
+## Getting Start
+ 
  As the project name shows, it is a servlet, so you can very easily embed it into any J2EE projects.  Follow these steps to run the demo:
  
 1. Download the `kjservlet-[version].jar` and put it into your project, in the most time, the location is 
@@ -43,3 +44,27 @@ function sayHello(req){
 6, Start up the server, and use you browser to visit `http://[your_server_host]:[your_server_port]/[your_servlet_context]/demo/sayHello?name=World`, then you will see the "Hello World" in the browser.
 
 For more information, please read the User Guide.
+
+## Route
+
+As you can see, there are no route configurations in the demo, so how the framework actually find the route? In fact, here directories are used. 
+
+Take the demo in the <b>Getting Start</b> for example, if you put the demo.js to a folder `path` in the class path (so that the real path of the demo.js will be `[webcontent]/WEB-INF/classes/path/demo.js`), then you will use `http://[your_server_host]:[your_server_port]/[your_servlet_context]/path/demo/sayHello?name=World` to visit the controller function. 
+
+In fact, you do have some way to configure the route. Please create a file global.js in the classpath root folder, and Add the following code to it. 
+
+```javascript
+$appEnv = {
+	fileHome : "classpath:", // default: "classpath:"
+	fileSuffix : ".js", // default: ".js"
+	controller : {
+		pkg : "org.keijack.kjservlet.demo.controller" // default: ""
+	}
+}
+```  
+
+<b> to do</b>
+
+
+
+ 
