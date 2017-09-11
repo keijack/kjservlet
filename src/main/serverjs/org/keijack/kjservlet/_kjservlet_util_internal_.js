@@ -16,17 +16,13 @@ _kj_util_.json.funVal = function(object, key) {
 };
 
 _kj_util_.json.toJava = function(object) {
-	var JavaObject = Java.type("java.lang.Object");
-	if (JavaObject["class"].isInstance(object)) {
-		return object;
-	}
 	if (typeof object === "object") {
 		if (Array.isArray(object))
 			return this.toJavaArray(object);
 		else
 			return this.toJavaMap(object);
 	} else if (typeof object === "function")
-		return object.toString();
+		return "[function]";
 	else
 		return object;
 };
@@ -35,7 +31,7 @@ _kj_util_.json.toJavaMap = function(object) {
 	var JavaHashMap = Java.type("java.util.HashMap");
 	if (typeof object !== "object")
 		return new JavaHashMap();
-	var map = new Map();
+	var map = new JavaHashMap();
 	for ( var name in object) {
 		map.put(name, this.toJava(object[name]));
 	}

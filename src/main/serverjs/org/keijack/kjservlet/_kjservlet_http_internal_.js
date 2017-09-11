@@ -103,7 +103,7 @@ var $renderer = (function() {
 		redirect : function(url, headers) {
 			return {
 				"_content_type" : "redirect",
-				"data" : url,
+				"url" : url,
 				"headers" : headers
 			};
 		},
@@ -184,7 +184,7 @@ var _kj_dispatch_and_run_ = (function() {
 	var JavaScriptContext = Java.type("javax.script.ScriptContext");
 	var JavaFileReader = Java.type("java.io.FileReader");
 	var JavaFile = Java.type("java.io.File");
-	var JavaFileInputStream = Java.type("java.io.FileInputStream")
+	var JavaFileInputStream = Java.type("java.io.FileInputStream");
 
 	/**
 	 * default configurations
@@ -295,7 +295,7 @@ var _kj_dispatch_and_run_ = (function() {
 					if (interceptor.before && typeof interceptor.before == "function")
 						aopBeforeFunctions.push(interceptor.before);
 					if (interceptor.after && typeof interceptor.after == "function")
-						aopAfterFunctions.push(interceptor.after)
+						aopAfterFunctions.push(interceptor.after);
 				}
 			}
 		}
@@ -335,7 +335,7 @@ var _kj_dispatch_and_run_ = (function() {
 			}
 			request.getRequestDispatcher(result.url).forward(request, response);
 		} else if (result._content_type == "redirect") {
-			res.redirect(result.data);
+			res.redirect(result.url);
 		} else if (result._contentType == "bytes") {
 			res.contentType = "application/octet-stream";
 			res.writeByte(result.data);
@@ -409,7 +409,6 @@ var _kj_dispatch_and_run_ = (function() {
 		res.contentType;
 		res.headers = {};
 		res.header = res.headers;
-		res.model = {};
 		res.sent = false;
 		res.checkSent = function() {
 			if (res.sent)
@@ -492,8 +491,11 @@ var _kj_dispatch_and_run_ = (function() {
 		req.header = req.headers;
 		req.parameterValues = {};
 		req.parameterValue = req.parameterValues;
+		req.paramVals = req.parameterValues;
 		req.parameters = {};
 		req.parameter = req.parameters;
+		req.params = req.parameters;
+		req.param = req.parameters;
 		req.pathValues = {};
 		req.pathValue = req.pathValues;
 
@@ -669,13 +671,15 @@ var _kj_dispatch_and_run_ = (function() {
 	var readLine = function(str) {
 		var idx = str.indexOf("\r\n");
 		if (idx < 0)
-			return str;
+			return {
+				"line" : str
+			};
 		var line = str.substring(0, idx);
 		var rest = str.substring(idx + 2, str.length);
 		return {
 			"line" : line,
 			"rest" : rest
-		}
+		};
 	};
 
 	return fun;

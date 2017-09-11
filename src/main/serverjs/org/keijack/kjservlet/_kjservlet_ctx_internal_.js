@@ -60,10 +60,21 @@ var $event = (function() {
 				eventListeners[evtName] = [];
 			}
 			eventListeners[evtName].push(listenerKey);
-			return listenerKey;
+			var _super = this;
+			return {
+				"key" : listenerKey,
+				"off" : function() {
+					_super.off(this.key);
+				}
+			};
 		},
-		"off" : function(listenerKey) {
-			delete callbacks[listenerKey];
+		"off" : function(listener) {
+			var key;
+			if (typeof listener === "object")
+				key = listener.key;
+			else
+				key = listener;
+			delete callbacks[key];
 		},
 		"publish" : function(evtName, data) {
 			var listenerKeys = eventListeners[evtName];
