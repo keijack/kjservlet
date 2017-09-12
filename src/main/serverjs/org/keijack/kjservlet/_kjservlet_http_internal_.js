@@ -239,13 +239,26 @@ var _kj_dispatch_and_run_ = (function() {
 		ctx.setAttribute("__kj_nashorn_engine__", __kj_nashorn_engine__, JavaScriptContext.ENGINE_SCOPE);
 		ctx.setAttribute("__kj_nashorn_inner_reader__", __kj_nashorn_inner_reader__, JavaScriptContext.ENGINE_SCOPE);
 		ctx.setAttribute("__kj_nashorn_req_ctx__", __kj_nashorn_inner_reader__, JavaScriptContext.ENGINE_SCOPE);
+		var root;
+		if ($appEnv.fileHome.startsWith("classpath:")) {
+			// class path
+			root = $appEnv.fileHome.replace("classpath:", $classpath);
+		} else if ($appEnv.fileHome.startsWith("/")) {
+			// absolute path
+			root = $appEnv.fileHome;
+		} else {
+			// relative path
+			root = $servletContextRoot + $appEnv.fileHome;
+		}
+		ctx.setAttribute("__kj_nashorn_controller_root__", root, JavaScriptContext.ENGINE_SCOPE);
+
 		__kj_nashorn_engine__.eval(__kj_nashorn_inner_reader__.read("_kjservlet_util_internal_.js"), ctx);
 		__kj_nashorn_engine__.eval(__kj_nashorn_inner_reader__.read("_kjservlet_ctx_internal_.js"), ctx);
 
 		var filePath = req.controller.pkg;
 		if (filePath) {
 			try {
-				__kj_nashorn_engine__.eval(new JavaFileReader(new JavaFile($classpath + filePath + $appEnv.fileSuffix)), ctx);
+				__kj_nashorn_engine__.eval(new JavaFileReader(new JavaFile(root + filePath + $appEnv.fileSuffix)), ctx);
 			} catch (err) {
 				res.sendError(500, err);
 				return;

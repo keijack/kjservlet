@@ -8,6 +8,7 @@ import java.io.StringWriter;
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -31,28 +32,14 @@ public final class KJServletRuntime {
 	}
     }
 
-    private static volatile KJServletRuntime INSTANCE;
-
-    public static KJServletRuntime getInstance(boolean singleton) {
-	if (singleton) {
-	    if (INSTANCE == null) {
-		synchronized (KJServletRuntime.class) {
-		    if (INSTANCE == null)
-			INSTANCE = new KJServletRuntime();
-		}
-	    }
-	    return INSTANCE;
-	} else {
-	    return new KJServletRuntime();
-	}
-    }
-
     private final ScriptEngine engine;
 
-    private KJServletRuntime() {
+    public KJServletRuntime(ServletContext ctx) {
 	try {
 	    engine = new ScriptEngineManager().getEngineByName("js");
 	    engine.put("__kj_nashorn_engine__", engine);
+
+	    engine.put("$servletContextRoot", ctx.getRealPath("/"));
 
 	    String classPath = this.getClass().getClassLoader().getResource("").getPath().toString();
 	    engine.put("$classpath", classPath);

@@ -4,7 +4,7 @@ var _kj_freemarker_conf_ = (function() {
 
 	var cfg = new FreeMarkerConf(FreeMarkerConf.VERSION_2_3_25);
 	cfg.setClassicCompatible(true);
-	cfg.setDirectoryForTemplateLoading(new JavaFile($classpath + "../.."));
+	cfg.setDirectoryForTemplateLoading(new JavaFile($servletContextRoot));
 	cfg.setDefaultEncoding("UTF-8");
 
 	return cfg;

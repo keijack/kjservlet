@@ -26,9 +26,12 @@ var imports = (function() {
 			while (path.indexOf(".") >= 0) {
 				path = path.replace(".", "/");
 			}
-			path = $appEnv.fileHome + path + $appEnv.fileSuffix;
+			path = path + $appEnv.fileSuffix;
 			if (path.startsWith("classpath:", $classpath)) {
 				path = path.replace("classpath:", $classpath)
+			} else if (!path.startsWith("/")) {
+				// relative path
+				path = __kj_nashorn_controller_root__ + path;
 			}
 
 			load(path);
