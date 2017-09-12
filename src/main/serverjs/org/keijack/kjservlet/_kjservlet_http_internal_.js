@@ -186,16 +186,6 @@ var _kj_dispatch_and_run_ = (function() {
 	var JavaFile = Java.type("java.io.File");
 	var JavaFileInputStream = Java.type("java.io.FileInputStream");
 
-	/**
-	 * default configurations
-	 */
-	var httpConf = {
-		encoding : $appEnv.controller.encoding,
-		parameterJSONFriendly : $appEnv.controller.parameterJSONFriendly,
-		pkg : $appEnv.controller.pkg,
-		suffix : $appEnv.controller.suffix,
-	};
-
 	var getCtxUri = function(request) {
 		var ctx = request.getContextPath();
 		if (ctx === "/")
@@ -375,7 +365,7 @@ var _kj_dispatch_and_run_ = (function() {
 		var ctl = {};
 		var path = req.ctxUri;
 		// remove suffix
-		var suffix = httpConf.suffix;
+		var suffix = $appEnv.controller.suffix;
 		if (suffix) {
 			if (!suffix.startsWith("."))
 				suffix = "." + suffix;
@@ -388,7 +378,7 @@ var _kj_dispatch_and_run_ = (function() {
 		var idx = path.indexOf("/$f:");
 		if (idx >= 0) {
 			ctl.func = req.pathValues["$f"];
-			ctl.pkg = formatPkg(httpConf.pkg + path.substring(0, idx));
+			ctl.pkg = formatPkg($appEnv.controller.pkg + path.substring(0, idx));
 			ctl.args = [];
 			var argsPath = path.substring(idx);
 			var nodes = argsPath.split("/");
@@ -409,7 +399,7 @@ var _kj_dispatch_and_run_ = (function() {
 			}
 			idx = pathWithoutValues.lastIndexOf("/");
 
-			ctl.pkg = formatPkg(httpConf.pkg + pathWithoutValues.substring(0, idx));
+			ctl.pkg = formatPkg($appEnv.controller.pkg + pathWithoutValues.substring(0, idx));
 			ctl.func = pathWithoutValues.substring(idx + 1);
 			ctl.args = [];
 		}
@@ -460,7 +450,7 @@ var _kj_dispatch_and_run_ = (function() {
 			if (!this.contentType) {
 				this.contentType = "text/plain";
 			}
-			response.setCharacterEncoding(this.encoding ? this.encoding : httpConf.encoding);
+			response.setCharacterEncoding(this.encoding ? this.encoding : $appEnv.controller.encoding);
 			this.writeBytes(body.getBytes());
 		};
 		res.writeBytes = function(bytes) {
@@ -559,7 +549,7 @@ var _kj_dispatch_and_run_ = (function() {
 
 		// Parameters
 		if (!req.contentType || req.contentType.toLowerCase().startsWith("application/x-www-form-urlencoded")) {
-			request.setCharacterEncoding(httpConf.encoding)
+			request.setCharacterEncoding($appEnv.controller.encoding)
 		} else if (req.contentType.toLowerCase().startsWith("multipart/form-data")) {
 			var boundary = "--" + req.contentType.split("boundary=")[1];
 			var paramParts = req.readRequestBody().split(boundary);
@@ -639,7 +629,7 @@ var _kj_dispatch_and_run_ = (function() {
 
 		for ( var name in req.parameterValues) {
 			var values = req.parameterValues[name];
-			if (httpConf.parameterJSONFriendly === true) {
+			if ($appEnv.controller.parameterJSONFriendly === true) {
 				for (var i = 0; i < values.length; i++) {
 					values[i] = tryToJSON(values[i]);
 				}
@@ -658,7 +648,7 @@ var _kj_dispatch_and_run_ = (function() {
 			var name = val.substring(0, index);
 			var value = val.substring(index + 1, val.length);
 			// json friendly
-			if (httpConf.parameterJSONFriendly === true) {
+			if ($appEnv.controller.parameterJSONFriendly === true) {
 				value = tryToJSON(value);
 			}
 			// comma, break into array
