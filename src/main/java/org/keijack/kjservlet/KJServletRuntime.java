@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
@@ -17,18 +19,27 @@ public final class KJServletRuntime {
 
     public class InnerJsReader {
 
+	private volatile Map<String, String> scriptCache = new HashMap<>();
+
 	public String read(String path) {
-	    try (InputStreamReader in = new InputStreamReader(this.getClass().getResourceAsStream(path))) {
-		StringWriter out = new StringWriter();
-		char[] buff = new char[1024];
-		int byteRead = 0;
-		while ((byteRead = in.read(buff)) > 0) {
-		    out.write(buff, 0, byteRead);
+	    if (!scriptCache.containsKey(path)) {
+		synchronized (scriptCache) {
+		    if (!scriptCache.containsKey(path)) {
+			try (InputStreamReader in = new InputStreamReader(this.getClass().getResourceAsStream(path))) {
+			    StringWriter out = new StringWriter();
+			    char[] buff = new char[1024];
+			    int byteRead = 0;
+			    while ((byteRead = in.read(buff)) > 0) {
+				out.write(buff, 0, byteRead);
+			    }
+			    scriptCache.put(path, out.toString());
+			} catch (Exception e) {
+			    throw new RuntimeException(e);
+			}
+		    }
 		}
-		return out.toString();
-	    } catch (Exception e) {
-		throw new RuntimeException(e);
 	    }
+	    return scriptCache.get(path);
 	}
     }
 
