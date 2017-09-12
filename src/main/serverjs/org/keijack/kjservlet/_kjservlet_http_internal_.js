@@ -236,9 +236,10 @@ var _kj_dispatch_and_run_ = (function() {
 		ctx.setBindings(__kj_nashorn_engine__.createBindings(), JavaScriptContext.ENGINE_SCOPE);
 		ctx.setAttribute("$appEnv", $appEnv, JavaScriptContext.ENGINE_SCOPE);
 		ctx.setAttribute("$classpath", $classpath, JavaScriptContext.ENGINE_SCOPE);
+		ctx.setAttribute("$servletContextRoot", $servletContextRoot, JavaScriptContext.ENGINE_SCOPE);
 		ctx.setAttribute("__kj_nashorn_engine__", __kj_nashorn_engine__, JavaScriptContext.ENGINE_SCOPE);
 		ctx.setAttribute("__kj_nashorn_inner_reader__", __kj_nashorn_inner_reader__, JavaScriptContext.ENGINE_SCOPE);
-		ctx.setAttribute("__kj_nashorn_req_ctx__", __kj_nashorn_inner_reader__, JavaScriptContext.ENGINE_SCOPE);
+		ctx.setAttribute("__kj_nashorn_req_ctx__", ctx, JavaScriptContext.ENGINE_SCOPE);
 		var root;
 		if ($appEnv.fileHome.startsWith("classpath:")) {
 			// class path
