@@ -29,7 +29,7 @@ var imports = (function() {
 			path = path + $appEnv.fileSuffix;
 			if (path.startsWith("classpath:", $classpath)) {
 				path = path.replace("classpath:", $classpath)
-			} else if (!path.startsWith("/")) {
+			} else {
 				// relative path
 				path = __kj_nashorn_controller_root__ + path;
 			}

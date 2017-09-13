@@ -28,10 +28,14 @@ var imports = (function() {
 				path = path.replace(".", "/");
 			}
 
-			if (!path.startsWith("/"))
+			if (path.startsWith("classpath:", $classpath)) {
+				path = path.replace("classpath:", $classpath)
+			} else {
+				// relative path
 				path = $classpath + path;
-			path += ".js";
-			load(path);
+			}
+
+			load(path + ".js");
 		}
 	}
 

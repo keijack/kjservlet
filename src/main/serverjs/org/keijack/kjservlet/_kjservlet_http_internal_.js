@@ -234,13 +234,11 @@ var _kj_dispatch_and_run_ = (function() {
 		if ($appEnv.fileHome.startsWith("classpath:")) {
 			// class path
 			root = $appEnv.fileHome.replace("classpath:", $classpath);
-		} else if ($appEnv.fileHome.startsWith("/")) {
-			// absolute path
-			root = $appEnv.fileHome;
 		} else {
 			// relative path
 			root = $servletContextRoot + $appEnv.fileHome;
 		}
+		root = root.replaceAll("//", "/");
 		ctx.setAttribute("__kj_nashorn_controller_root__", root, JavaScriptContext.ENGINE_SCOPE);
 
 		__kj_nashorn_engine__.eval(__kj_nashorn_inner_reader__.read("_kjservlet_util_internal_.js"), ctx);
