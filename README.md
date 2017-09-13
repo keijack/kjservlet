@@ -37,8 +37,8 @@
 5. Add a function to `demo.js` like: 
 ```javascript
 function sayHello(req){
-	var name=req.param["name"];
-	return $renderer.html("<!DOCTYPE html><html><head><title>Say Hello</title></head><body>Hello, " + name + "</body></html>");
+    var name=req.param["name"];
+    return $renderer.html("<!DOCTYPE html><html><head><title>Say Hello</title></head><body>Hello, " + name + "</body></html>");
 }
 ``` 
 6, Start up the server, and use you browser to visit `http://[your_server_host]:[your_server_port]/[your_servlet_context]/demo/sayHello?name=World`, then you will see the "Hello World" in the browser.
@@ -47,23 +47,54 @@ For more information, please read the User Guide.
 
 ## Route
 
-As you can see, there are no route configurations in the demo, so how the framework actually find the route? In fact, here directories are used. 
+As you can see, there are no route configurations in the demo, so how the framework actually find the route? Here, directories are used. 
 
 Take the demo in the <b>Getting Start</b> for example, if you put the demo.js to a folder `path` in the class path (so that the real path of the demo.js will be `[webcontent]/WEB-INF/classes/path/demo.js`), then you will use `http://[your_server_host]:[your_server_port]/[your_servlet_context]/path/demo/sayHello?name=World` to visit the controller function. 
 
-In fact, you do have some way to configure the route. Please create a file global.js in the classpath root folder, and Add the following code to it. 
-
+In fact, you do have some ways to configure the route. A `global.js` in the classpath root folder will be run when the runtime environment is being prepared. In this file, you can redefined a global variable $appEnv, which will affect the routing. 
 ```javascript
 $appEnv = {
-	fileHome : "classpath:", // default: "classpath:"
-	fileSuffix : ".js", // default: ".js"
-	controller : {
-		pkg : "org.keijack.kjservlet.demo.controller" // default: ""
-	}
-}
+    fileHome : "/WEB-INF/server-js/", // Where your js files are, default is "classpath:"
+    fileSuffix : ".js", // What suffix is your js file, default is "js"
+    controller : {
+        pkg : "org.keijack.kjservlet.demo.controller", // The package of the js file, when routing,
+                                                       // you don't need to add  
+                                                       // /org/keijack/kjservlet/demo/controller/  
+                                                       // to you url. 
+        suffix : "", // If your url have a suffix, like ".do", please set it here
+    },
+    resources : [ "*.html", "/images/*" ], // the url match these pattern will be treated as the static files
+};
 ```  
+If you want to get more information about this `global.js` file, please read the <b>The global.js file</b> chapter.
 
-<b> to do</b>
+The last portion of the url is the controller function name, which is `sayHello` in the example above. In this example the function `sayHellow` in the `demo.js` will be called.
+
+There is also another way to route to the controller function, we will talk about that later. 
+
+KJServlet is function related design, it's OK for you to use global functions. In fact, every request will run in its own context -- We will go deeper into that latter -- so it doesn't matter even you have duplicated function names in different controller files. But if you want to arrange your codes well by using spaces and objects, the framework supports that as well. 
+
+In the example above, if you defined an object like the following in your `demo.js` file:
+```javascript
+var person = {
+    yieldName : function(req) {
+        var name = req.parameters.name;
+        return $renderer.html("<!DOCTYPE html><html><head><title>Say Hello</title></head><body>My name is " + name + "!</body></html>");
+    }
+};
+```
+Then you can use the following url to visit:
+```shell
+http://[your_server_host]:[your_server_port]/[your_servlet_context]/demo/person.yieldName?name=John
+```
+
+## Writing Controllers
+When the framework finally find your controller function via routing mentioned above chapter, the framework will call your function by giving your function 2 arguments, which are request and response -- Which are not the original HttpServletRequest and HttpServletResponse objects from servlet, but the wrapped ones. But if you really want to get the original Java Object, use request.oriRequest to get the original HttpServletRequest, and use the response.oriResponse to get the original HttpServletResponse.  
+ 
+There are several code style to write controller function.
+ 
+### Use response object and return no values
+
 
 
 
