@@ -485,8 +485,11 @@ var _kj_dispatch_and_run_ = (function() {
 		req.serverPort = request.getServerPort();
 		req.contextPath = request.getContextPath();
 		req.requestUri = request.getRequestURI();
+		req.requestURI = req.requestUri;
+		req.uri = req.requestUri;
 		req.servletPath = request.getServletPath();
 		req.requestUrl = request.getRequestURL().toString();
+		req.requestURL = req.requestUrl;
 		req.url = req.requestUrl;
 
 		req.headers = {};

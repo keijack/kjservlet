@@ -10,7 +10,7 @@
  As the project name shows, it is a servlet, so you can very easily embed it into any J2EE projects.  Follow these steps to run the demo:
  
 1. Download the `kjservlet-[version].jar` and put it into your project, in the most time, the location is 
-```shell
+```
  [webapps]/WEB-INF/lib
  ```   
 2.  If you are using maven, for the reason that this project have not put into the maven central repository (will do it latter), you have  to checkout this project and make it as your local maven modual, then add the following dependency to your `pom.xml`
@@ -49,7 +49,7 @@ For more information, please read the User Guide.
 
 As you can see, there are no route configurations in the demo, so how the framework actually find the route? Here, directories are used. 
 
-Take the demo in the <b>Getting Start</b> for example, if you put the demo.js to a folder `path` in the class path (so that the real path of the demo.js will be `[webcontent]/WEB-INF/classes/path/demo.js`), then you will use `http://[your_server_host]:[your_server_port]/[your_servlet_context]/path/demo/sayHello?name=World` to visit the controller function. 
+Take the demo in the **Getting Start** for example, if you put the demo.js to a folder `path` in the class path (so that the real path of the demo.js will be `[webcontent]/WEB-INF/classes/path/demo.js`), then you will use `http://[your_server_host]:[your_server_port]/[your_servlet_context]/path/demo/sayHello?name=World` to visit the controller function. 
 
 In fact, you do have some ways to configure the route. A `global.js` in the classpath root folder will be run when the runtime environment is being prepared. In this file, you can redefined a global variable $appEnv, which will affect the routing. 
 ```javascript
@@ -66,7 +66,7 @@ $appEnv = {
     resources : [ "*.html", "/images/*" ], // the url match these pattern will be treated as the static files
 };
 ```  
-If you want to get more information about this `global.js` file, please read the <b>The global.js file</b> chapter.
+If you want to get more information about this `global.js` file, please read the **The global.js file** chapter.
 
 The last portion of the url is the controller function name, which is `sayHello` in the example above. In this example the function `sayHellow` in the `demo.js` will be called.
 
@@ -84,18 +84,89 @@ var person = {
 };
 ```
 Then you can use the following url to visit:
-```shell
+```
 http://[your_server_host]:[your_server_port]/[your_servlet_context]/demo/person.yieldName?name=John
 ```
 
-## Writing Controllers
-When the framework finally find your controller function via routing mentioned above chapter, the framework will call your function by giving your function 2 arguments, which are request and response -- Which are not the original HttpServletRequest and HttpServletResponse objects from servlet, but the wrapped ones. But if you really want to get the original Java Object, use request.oriRequest to get the original HttpServletRequest, and use the response.oriResponse to get the original HttpServletResponse.  
+## Writing Controllers  
  
-There are several code style to write controller function.
- 
-### Use response object and return no values
+### The Request and the Response arguments
+Just like the normal servlet that you will write when you implements javax.servlet.Servlet Interface in Java code, the framework will give you two arguments to your controller function. You should get user data from the first argument the framework past to your controller function, which is known as the Request object, and write data back by using the second argument which is known as the Response object. Of course, we have another way provided by using return values to send back data, and you can completely ignore the response object just like we did in the **Getting Start** chapter, we will talk about that latter.
+
+The very example of using request and response objects is like this:
+```javascript
+function dosth(req, res){
+    var someParamVal = req.parameters["name-defined-in-form-input"]; // if your parameters name is simple enough, you can use "." also, like: req.parameters.simpleName
+    var serviceResult = someServiceObject.doService(someParamVal);
+    res.write(serviceResult);
+    /*
+    if the serviceResult is the Java byte array, instead, please use
+    res.writeByte(serviceResult);
+    */
+}
+```
+If you prefer to callback functions, you might write codes like:
+```javascript
+function dosth(req, res){
+    var someParamVal = req.parameters["name-defined-in-form-input"]; // if your parameters name is simple enough, you can use "." also, like: req.parameters.simpleName
+    someServiceObject.doService(someParamVal, function (serviceCallbackResult) {
+        res.write(serviceCallbackResult);
+    });
+}
+```
+
+The completed fields and functions of the request and response objects are bellow. 
+
+#### The Properties and Functions of the Request Object
+* **req.oriRequest**, the original HttpServletRequest object comes from the servlet.  
+* **req.session**, the HttpSession object comes from the original request's getSession() method.
+* **req.authType**, the authType comes from the original request's getAuthType() method.
+* **req.method**, the request method comes from the original request's getMethod() method.
+* **req.contentLength**, the content length comes from the original request's getContentLength() method.
+* **req.contentType**, the request content type, comes from the original request.getContentType() method.
+* **req.queryString**, the query string, the string after the url's "?", comes from the original request's getQueryString() method.
+* **req.protocol**, the protocol of this request, it would be "HTTP/1.1", comes from the original request's getProtocol() method;
+* **req.schema**, the schema of this request, it would be "http" or "https", comes from the original request's getSchema() method;
+* **req.serverName**, the server name, comes from the original request's getServerName() method.
+* **req.serverPort**, the server port, comes from the original request's getServerPort() method.
+* **req.contextPath**, the context path, if you put all the web content to the `$TOMCAT_HOME/webapps/ROOT/` for example, the context path is `/`, if the web content locates in `$TOMCAT_HOME/webapps/demo/`, the context path is `/demo/`;
+* **req.requestURI**, the request uri, not includes the schema, server name, server port and query string  but inclues the context path. comes from the original request's getRequestURI() method.
+* **req.requestUri**, an alias of `req.requestURI`.
+* **req.ctxUri**, request uri without context path.
+* **req.uri**, another alias of `req.requestURI`.
+* **req.servletPath**, the servlet path comes from the original request's getServletPaht() method.
+* **req.requestURL**, the string before the url's "?", comes from the original request's getRequestURL() method, already change it to a string using toString() method.
+* **req.requestUrl**, an alias of `req.requestURL`.
+* **req.url**, another alias of `req.requestURL`.
+* **req.headers**, the request's headers, has been initialized by using the original request's getHeader(name) method. For example, You can use `req.headers["user-agent"]` to get the user agent.
+* **req.header**, an alias of `req.headers`.
+* **req.parameterValues**, the parameter values, including the values from the query string and the request body when content type is `application/x-www-form-urlencoded` and `multipart/form-data`. This property holds arrays, even only one value. If the values contains a file uploaded by user when the request's content type is `multipart/form-data`, the value will be an objeck like
+```javascript
+{
+    "filename": "somePicture.jpg", // the file's name
+    "contentType": "image/jpg", // the content type
+    "content": "xxxxxx" // a string that get from the multipart content, 
+                        // you can use getBytes() method to get the byte array, 
+                        // and write it into a file.
+}
+```
+* **req.parameterValue**, an alias of `req.parameterValues`.
+* **req.paramVals**, another alias of `req.parameterValues`.
+* **req.parameters**, similar whith `req.parameterValues`, but only have one value. If there are more than one value with the parameter name, the first one would be the value here.
+* **req.parameter**, an alias of `req.parameters`.
+* **req.params**, another alias of `req.parameters`.
+* **req.param**, another alias of `req.parameters`.
+* **req.pathValues**, the values comes from the url path itself, will discuss latter.
+* **req.pathValue**, an alias of `req.pathValues`.
+* **req.setAttribute(name, val)**, the wrap of the original request's setAttribute(name, value) method.
+* **req.setAttr(name, val)**, an alias of `req.setAttribute(name, val)`;
+* **req.getAttribute(name, defaultValue)**, the wrap of the original request's getAttribute(name) method, if there are no value then return the defaultValue that given.
+* **req.getAttr(name, defaultValue)**, an alias of `req.getAttribute(name, defaultValue)`.
+* **req.removeAttribute(name)**, the wrap of the original request's removeAttribute(name) method.
+* **req.removeAttr(name)**, an alias of `req.removeAttribute(name)`.
+* **req.rmAttr(name)**, another alias of `req.removeAttribute(name)`.
+* **req.readRequestBody()**, return the request body string, if the content type is `application/x-www-form-urlencoded`, this method will return null.
+* **req.data**, if the request content type is `application/json`, this property will be JSON.parse(req.readRequestBody).
 
 
 
-
- 
