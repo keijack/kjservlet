@@ -244,7 +244,7 @@ var _kj_dispatch_and_run_ = (function() {
 		__kj_nashorn_engine__.eval(__kj_nashorn_inner_reader__.read("_kjservlet_util_internal_.js"), ctx);
 		__kj_nashorn_engine__.eval(__kj_nashorn_inner_reader__.read("_kjservlet_ctx_internal_.js"), ctx);
 
-		var filePath = req.controller.pkg;
+		var filePath = req.controller.location;
 		if (filePath) {
 			try {
 				__kj_nashorn_engine__.eval(new JavaFileReader(new JavaFile(root + filePath + $appEnv.fileSuffix)), ctx);
@@ -348,16 +348,16 @@ var _kj_dispatch_and_run_ = (function() {
 	};
 
 	var getController = function(req) {
-		var formatPkg = function(path) {
-			var pkgPath = path.replaceAll(".", "/").replaceAll("//", "/");
-			var pkgNodes = pkgPath.split("/");
-			pkgPath = "";
-			for ( var i in pkgNodes) {
-				var node = pkgNodes[i];
+		var formatLocation = function(path) {
+			var locationPath = path.replaceAll(".", "/").replaceAll("//", "/");
+			var locationNodes = locationPath.split("/");
+			locationPath = "";
+			for (var i = 0; i < locationNodes.length; i++) {
+				var node = locationNodes[i];
 				if (node && node.indexOf(":") < 0)
-					pkgPath += "/" + node;
+					locationPath += "/" + node;
 			}
-			return pkgPath;
+			return locationPath;
 		};
 
 		var ctl = {};
@@ -376,7 +376,7 @@ var _kj_dispatch_and_run_ = (function() {
 		var idx = path.indexOf("/$f:");
 		if (idx >= 0) {
 			ctl.func = req.pathValues["$f"];
-			ctl.pkg = formatPkg($appEnv.controller.pkg + path.substring(0, idx));
+			ctl.location = formatLocation($appEnv.controller.pkg + path.substring(0, idx));
 			ctl.args = [];
 			var argsPath = path.substring(idx);
 			var nodes = argsPath.split("/");
@@ -397,7 +397,7 @@ var _kj_dispatch_and_run_ = (function() {
 			}
 			idx = pathWithoutValues.lastIndexOf("/");
 
-			ctl.pkg = formatPkg($appEnv.controller.pkg + pathWithoutValues.substring(0, idx));
+			ctl.location = formatLocation($appEnv.controller.pkg + pathWithoutValues.substring(0, idx));
 			ctl.func = pathWithoutValues.substring(idx + 1);
 			ctl.args = [];
 		}
