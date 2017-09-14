@@ -168,5 +168,20 @@ The completed fields and functions of the request and response objects are bello
 * **req.readRequestBody()**, return the request body string, if the content type is `application/x-www-form-urlencoded`, this method will return null.
 * **req.data**, if the request content type is `application/json`, this property will be JSON.parse(req.readRequestBody).
 
+#### The Properties and Functions of the Response Object
+* **res.oriResponse**, the original HttpServletResponse object.
+* **res.contentType**, the content type of this response, will set this value using original response's setContentType() method.
+* **res.headers**, headers of this response, will use original response's addHeader(name, value) to add all these properties to the original response. 
+* **res.header**, an alias of `res.headers`.
+* **res.addHeader(name, value)**, the wrap of the original response's addHeader(name, value) method.
+* **res.setHeader(name, value)**, the wrap of the original response's setHeader(name, value) method.
+* **res.sendError(code, message)**, the wrap of the original response's sendError(code, message) method, it's OK that you ignore the message parameter by just using `res.sendError(code)`.
+* **res.redirect(url)**, the wrap of the original response's sendRedirect(url) method.
+* **res.write(data)**, write data to the response's output stream. Data could be a JSON object, in this case, the JSON.stringify(data) will be used before to change the JSON object to string. 
+* **res.writeByte(bytes)**, only accept byte array as the only parameter, write data by using original response's getOutputStream().write(bytes); *About the Content-Length, the response object will calculate that automatically.*
+
+### Another Way to Response
+
+
 
 

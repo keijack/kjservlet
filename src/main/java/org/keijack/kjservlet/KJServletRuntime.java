@@ -50,7 +50,11 @@ public final class KJServletRuntime {
 	    engine = new ScriptEngineManager().getEngineByName("js");
 	    engine.put("__kj_nashorn_engine__", engine);
 
-	    engine.put("$servletContextRoot", ctx.getRealPath("/"));
+	    String ctxRoot = ctx.getRealPath("/");
+	    if (!ctxRoot.endsWith(File.separator)) {
+		ctxRoot += File.separator;
+	    }
+	    engine.put("$servletContextRoot", ctxRoot);
 
 	    String classPath = this.getClass().getClassLoader().getResource("").getPath().toString();
 	    engine.put("$classpath", classPath);

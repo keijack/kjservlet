@@ -318,7 +318,7 @@ var _kj_dispatch_and_run_ = (function() {
 			if (typeof result == "object")
 				result = $renderer.json(result);
 			else
-				result = $renderer.text(result);
+				result = $renderer.render(null, result); // let the response.write to decide the content type.
 
 		if (result.headers) {
 			for ( var name in result.headers) {
@@ -439,15 +439,29 @@ var _kj_dispatch_and_run_ = (function() {
 		};
 		res.write = function(data) {
 			var body = "";
-			if (typeof data === "object" && (!this.contentType || this.contentType == "application/json")) {
-				this.contentType = "application/json";
+			if (typeof data === "object") {
 				body = JSON.stringify(data);
+				if (!this.contentType)
+					this.contentType = "applcation/json";
 			} else {
 				body = data.toString();
+				// Guess the content type
+				if (!this.contentType) {
+					if (body.trim().startsWith("<") && body.trim().endsWith("</html>")) {
+						this.contentType = "text/html";
+					} else if (body.trim().startsWith("<") && body.trim().endsWith(">")) {
+						this.contentType = "text/xml";
+					} else {
+						try {
+							JSON.parse(body.trim());
+							this.contentType = "application/json";
+						} catch (err) {
+							this.contentType = "text/plain";
+						}
+					}
+				}
 			}
-			if (!this.contentType) {
-				this.contentType = "text/plain";
-			}
+
 			response.setCharacterEncoding(this.encoding ? this.encoding : $appEnv.controller.encoding);
 			this.writeBytes(body.getBytes());
 		};
