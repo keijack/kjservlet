@@ -65,6 +65,20 @@ _kj_util_.json.extand = function(target, o1) {
 };
 
 _kj_util_.func.getAnnotations = function(func) {
+	var trimComments = function(srouceCode) {
+		var code = sourceCode.trim();
+		while (code.startsWith("//") || code.startsWith("/*")) {
+			var idx = 0;
+			if (code.startsWith("//")) { // one line comments;
+				idx = code.indexOf("\n") + 1;
+			} else { // multiple lines comments
+				idx = code.indexOf("*/") + 2;
+			}
+			code = code.substring(idx).trim();
+		}
+		return code;
+	};
+
 	if (typeof func !== 'function')
 		return [];
 	var sourceCode = func.toString();
@@ -74,6 +88,7 @@ _kj_util_.func.getAnnotations = function(func) {
 		if (sourceCode.startsWith(';'))
 			sourceCode = sourceCode.substring(1).trim();
 	}
+	sourceCode = trimComments(sourceCode);
 	var annos = [];
 	while (sourceCode.startsWith('"@') || sourceCode.startsWith("'@")) {
 		var quoteChar = sourceCode.charAt(0);
@@ -85,6 +100,7 @@ _kj_util_.func.getAnnotations = function(func) {
 		sourceCode = sourceCode.substring(tag.length + 1).trim(); // remove "
 		if (sourceCode.startsWith(';')) // remove ;
 			sourceCode = sourceCode.substring(1).trim();
+		sourceCode = trimComments(sourceCode);
 	}
 	return annos;
 

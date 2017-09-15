@@ -88,6 +88,18 @@ Then you can use the following url to visit:
 http://[your_server_host]:[your_server_port]/[your_servlet_context]/demo/person.yieldName?name=John
 ```
 
+## Import Other Script Files
+The last chapter shows you how to route a url to a function in a Javascript file. You won't just define one function as the controller in most cases. You will have to call other functions, but how could you call the function in other script files?
+
+Nashorn provides a function load(path), but normally, we recommend you to use a function name imports(path) instead. 
+
+There are several reasons that you should use imports():
+
+* In one context -- global.js runs on the global context, and every request runs on its own context --, no matter how many times you call the import function, it only import the same file once. It's more efficient when your scripts import some common function that you define in a common script file.
+* It's much easier to handle location, it use the relative path rather than absolute path. *Notice! In controller script files and the files imported by them, the relative root is the fileHome you define in `$appEvn`. While in global.js and the files it imports, `classpaht:` is the relative root.* 
+* in imports function, the path can use `.` to separate path just like the package path in Java. Both `org.keijack.kjservlet.service` and `org/keijack/kjservlet/service` are accepted. *Notice! In controller script files and the files imported by them, the suffix is the one you define in `$appEvn`. While in global.js and the files it imports, `.js` is only suffix that supported.*
+ 
+
 ## Writing Controllers  
  
 ### The Request and the Response arguments
@@ -230,7 +242,8 @@ The framework will do the wrap for you. You can also return some string like:
 ```javascript
     return "some text"; // will render as "text/plain" 
 ```
-### MVC
+
+## MVC
 MVC is a well know design pattern, whose main principle is to separate the business logic layer(Model), control layer(controller), and the presentation layer(View) to make codes much clearer and easier to read, maintain and extend.  
   
 Web developers loves to use MVC patterns, especially Java web developers, so they have done so much work on building up all kinds of template engines. Thanks to this, we can very easily using MVC in our framework.
@@ -334,6 +347,55 @@ $appEnv = {
     }, 
 }
 ```
-### Annotations and AOP
+## Annotations and AOP
+Unlike Java, there are no build-in annotations in Javascript, and because of that you can defined your object any time, any where, it's pretty hard to intercept into the logic in runtime. However, we play a little trick for that. 
+  
+If you are familiar with Javascript, you must have heard of the **strict mode**. If you want to run a function in a strict mode, you just need to add a line "use strict" to first line of the function body. Our annotations just like that. 
+```javascript
+function dosth(req){
+    "use strict";
+    "@post"; // build-in annotations
+    "@myOwnAnno"; // user-defined annotations
+    //your function codes here
+    ...
+    "@Anno2"; // this cannot be read.    
+    ...
+}
+```
+So, the annotations of this controller function are ["@post", "@myOwnAnno"]. 
 
+*Notice! Annotations can only be read in the Controller functions!*
 
+Now, you know how to put annotations, but how to use it? Let go back to $appEnv in the `global.js`;
+```javascript
+$appEnv = {
+    fileHome : "...", 
+    fileSuffix : ".js",
+    controller : {
+        pkg : "...", 
+        suffix : "", 
+    },
+    resources : [ "*.html", "/images/*" ],
+    view : {
+        resolver : "jsp", 
+        prefix : "/WEB-INF/pages/", 
+        suffix : ".jsp", 
+    },
+    interceptors : [ {
+        intercept : ["@myOwnAnno"], // It's OK to use just a string here, rather than an array.
+        before : function(req, res) {
+        	// do things here before the controller function being called
+        	return true; // you must return true to tell the framework that continue to call the controller function, or not the controller function will not be called.
+        },
+        after : function(req, res, result) {
+        	// do things after the controller function been called
+        } 
+    } ],  // if you only have one interceptor, you can put an object here rather that an array.
+}
+```
+There are some build-in annotations, which are **"@get", "@head", "@post", "@put", "@delete", "@connect", "@options", "@trace", "@patch"**. As you can see, they are all request methods in lower case. So if you put at lease one of this annotations to a controller function, but the method of a request is not among them, a 404 error will be sent back.  
+
+## Events
+Many Javascript developers like to use events, however, Nashorn runs on Java environment, so it's weak on supporting for events.
+
+However, KJServlet provides a simple event handler. You can register and publish event in script file where the controller function in and all the script that it imports.

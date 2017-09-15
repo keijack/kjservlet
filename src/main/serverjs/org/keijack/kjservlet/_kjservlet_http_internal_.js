@@ -267,17 +267,8 @@ var _kj_dispatch_and_run_ = (function() {
 		}
 
 		var funcAnnos = _kj_util_.func.getAnnotations(func);
-		if (_kj_util_.array.containOne(funcAnnos, [ "@post", "@get", "@put", "@delete" ])) {
-			if (req.method.toLowerCase() == "post" && funcAnnos.indexOf("@post") < 0) {
-				res.sendError(404);
-				return;
-			} else if (req.method.toLowerCase() == "get" && funcAnnos.indexOf("@get") < 0) {
-				res.sendError(404);
-				return;
-			} else if (req.method.toLowerCase() == "put" && funcAnnos.indexOf("@put") < 0) {
-				res.sendError(404);
-				return;
-			} else if (req.method.toLowerCase() == "delete" && funcAnnos.indexOf("@delete") < 0) {
+		if (_kj_util_.array.containOne(funcAnnos, [ "@get", "@head", "@post", "@put", "@delete", "@connect", "@options", "@trace", "@patch" ])) {
+			if (funcAnnos.indexOf("@" + req.method.toLowerCase()) < 0) {
 				res.sendError(404);
 				return;
 			}
@@ -429,10 +420,10 @@ var _kj_dispatch_and_run_ = (function() {
 		};
 		res.sendError = function(code, msg) {
 			this.checkSent();
-			var message = "";
 			if (msg)
-				message = msg;
-			this.oriResponse.sendError(code, msg);
+				this.oriResponse.sendError(code, msg);
+			else
+				this.oriResponse.sendError(code);
 		};
 		res.redirect = function(location) {
 			this.checkSent();
