@@ -105,7 +105,7 @@ function dosth(req, res){
     */
 }
 ```
-If you prefer to callback functions, you might write codes like:
+If you prefer callback functions, you might write codes like:
 ```javascript
 function dosth(req, res){
     var someParamVal = req.parameters["name-defined-in-form-input"]; // if your parameters name is simple enough, you can use "." also, like: req.parameters.simpleName
@@ -181,7 +181,159 @@ The completed fields and functions of the request and response objects are bello
 * **res.writeByte(bytes)**, only accept byte array as the only parameter, write data by using original response's getOutputStream().write(bytes); *About the Content-Length, the response object will calculate that automatically.*
 
 ### Another Way to Response
+In this section, you can see how to ignore the response object, and use return value to send back data.
 
+As you can see in the **Getting Start** chapter, you can completely ignore the response object, and return some values which will be written back to original response by the framework.
 
+The value returned will be a structure JSON object, you don't need to know how the JSON like. Because a global object $renderer is provided, which will do the wrapping. 
+
+The methods of the $renderer object is bellow:
+* **$renderer.render(contentType, content, headers)**, render a customized content type response. However, if you pass null, "", false to the contentType parameter, the framework will try to guess what you content is. The content parameter should be a string; parameter headers is optional, it is a JSON object, all its values will use the original response's addHeader(name, value) method to add to the response.
+* **$renderer.text(text, headers)**, render a text response, the content type will be "text/plain"; the headers is optional. 
+* **$renderer.html(data, headers)**, render a html response, the content type will be "text/html"; the headers is optional. 
+* **$renderer.json(data, headers)**, render a JSON response, the content type will be "application/json"; the data should be a JSON object, and the headers is optional.
+* **$renderer.bytes(data, headers)**, data should be a Java byte array, and the headers is optional. The framework will use the original response's getOutputStream().write(data) to write the data back.
+* **$renderer.redirect(url, headers)**, the framework will use the original response's sendRedirect(url) to send a redirect. Before that headers -- if you pass it to the method -- will be added to the response's headers. 
+* **$renderer.forward(url, data, headers)**, the framework will use the original request.getRequestDispatcher(url).forward(request, response) to forward the request. The data parameter and the headers parameter are optional. When you pass this two parameters, the values in data object will be added to request using the original request's setAttribute(name, value) method, while headers will be added to the **response**'s header by using the original response's addAttribute(name, value) method.
+* **$renderer.error(code, message)**, send back an error, message is optional.
+* **$renderer.view(viewFileLocation, data, headers)**, using MVC design pattern, support JSP, Freemarker and Velocity, customized resolve function. will discuss this latter.
+
+By using the $renderer object , your code style would probably like:
+```javascript
+function dosth(req){
+	var param = req.parameters;
+	var serviceResult = someServiceObject.doService(param);
+	return $renderer.json(serviceResult);
+}
+```
+You can even use even much simpler way to do this, like:
+```javascript
+function dosth(req){
+	var param = req.parameters;
+	var serviceResult = someServiceObject.doService(param);
+	return serviceResult;
+}
+```
+The framework will do the wrap for you. You can also return some string like:
+```javascript
+    return "<!DOCTYPE html><html>....</html>"; // will render as "text/html".
+```
+```javascript
+    return "<?xml version="1.0" encoding="UTF-8"?><tag>...</tag>"; // will render as "text/xml"
+```
+```javascript
+    return "redirect:/url"; // will redirect to /url
+```
+```javascript
+    return "forward:/url"; // will forward to /url
+```
+```javascript
+    return "some text"; // will render as "text/plain" 
+```
+### MVC
+MVC is a well know design pattern, whose main principle is to separate the business logic layer(Model), control layer(controller), and the presentation layer(View) to make codes much clearer and easier to read, maintain and extend.  
+  
+Web developers loves to use MVC patterns, especially Java web developers, so they have done so much work on building up all kinds of template engines. Thanks to this, we can very easily using MVC in our framework.
+ 
+KJServlet support JSP, Freemarker and Velocity template engine. 
+
+It's very easy to use the template, just like:
+```javascript
+function dosth(req){
+    var param = req.parameters;
+	var serviceResult = someServiceObject.doService(param);
+	return $renderer.view("/WEB-INF/pages/view.jsp", serviceResult);
+}
+```
+The template engine is JSP by default, if you want to change it, please set it up in $appEnv in your `global.js` file.
+```javascript
+$appEnv = {
+    fileHome : "...", 
+    fileSuffix : ".js",
+    controller : {
+        pkg : "...", 
+        suffix : "", 
+    },
+    resources : [ "*.html", "/images/*" ],
+    view : {
+        resolver : "jsp", // The resolver, "jsp" by default, you can change it to "freemarker" or "velocity"
+        prefix : "/WEB-INF/pages/", // the prefix of the view
+        suffix : ".jsp", // the suffix of theview
+    }, 
+}
+```
+With the configuration above, you controller will be:
+```javascript
+function dosth(req){
+    var param = req.parameters;
+	var serviceResult = someServiceObject.doService(param);
+	return $renderer.view("view", serviceResult); // and the template file will be /WEB-INF/pages/view.jsp 
+}
+```
+*Notice! When you change the resolver to `freemarker` or `velocity`, you must import the relative jars to your project. If you use freemarker resolver, and using maven to build your webapp, the following dependency mush be added to your `pom.xml`*
+```xml
+    <dependency>
+        <groupId>org.freemarker</groupId>
+        <artifactId>freemarker</artifactId>
+        <version>2.3.26-incubating</version>
+    </dependency>
+```
+The second parameter which names data of the **$renderer.view(templateFileLocation, data, header)** should be a JSON object, the framework will convert this into a Java Map, so when you are writing the template file, just use it as a Map. 
+
+For Example, if you data object is:
+```javascript
+function dosth(req){
+    var data = {"userName": "Jhon",
+                "sex": "male",
+                "age": 28,
+                "department": { "name": "HR",
+                                "phone": "+01xxxxxx",
+                },
+                "subordinates": ["Mike", "Lily"]
+    };
+    return $renderer.view("view", data);
+}
+```
+So in your template file -- take freemarker for example -- would probably like:
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Personal Details</title>
+</head>
+<body>
+    <h1>Personal Details of ${userName}</h1>
+    <p>sex: ${sex}</p>
+    <p>age: ${age}</p>
+    <p>department: ${department.name}</p>
+    <p>subordinates: <#list subordinates as sbn>${sbn}, </#list>
+</body>
+</html>
+``` 
+You can even customized your own resolver:
+```javascript
+$appEnv = {
+    fileHome : "...", 
+    fileSuffix : ".js",
+    controller : {
+        pkg : "...", 
+        suffix : "", 
+    },
+    resources : [ "*.html", "/images/*" ],
+    view : {
+        resolver : function(viewFileLocation, javaMap, headers){
+            // viewFileLocation is the one that has already contacted with the prefix and suffix.
+            // and javaMap has been already converted to a Java Map.
+            // you can do your own logic here
+            var html = ...;
+            // finally don't forget to return the result object.
+            return $renderer.html(html, headers); 
+        },
+        prefix : "/WEB-INF/pages/", // the prefix of the view
+        suffix : ".jsp", // the suffix of theview
+    }, 
+}
+```
+### Annotations and AOP
 
 

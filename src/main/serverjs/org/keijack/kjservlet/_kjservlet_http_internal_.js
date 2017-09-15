@@ -317,6 +317,10 @@ var _kj_dispatch_and_run_ = (function() {
 		if (!result.hasOwnProperty("_content_type"))
 			if (typeof result == "object")
 				result = $renderer.json(result);
+			else if (typeof result == "string" && result.startsWith("redirect:"))
+				result = $renderer.redirect(result.replace("redirect:", ""));
+			else if (typeof result == "string" && result.startsWith("forward:"))
+				result = $renderer.forward(result.replace("forward:", ""));
 			else
 				result = $renderer.render(null, result); // let the response.write to decide the content type.
 
@@ -449,7 +453,7 @@ var _kj_dispatch_and_run_ = (function() {
 				if (!this.contentType) {
 					if (body.trim().startsWith("<") && body.trim().endsWith("</html>")) {
 						this.contentType = "text/html";
-					} else if (body.trim().startsWith("<") && body.trim().endsWith(">")) {
+					} else if (body.trim().startsWith("<?xml") && body.trim().endsWith(">")) {
 						this.contentType = "text/xml";
 					} else {
 						try {
