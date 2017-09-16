@@ -510,7 +510,8 @@ If you are not using mysql, or if you want to use some connection pool, you use 
     var conn = $db.connect("druid");
 ```
 
-####The Connection Object
+**The Connection Object** 
+
 After you get the connection object, you can use **select, insert, update, delete** to do your business. 
 * **conn.select(sql [, params][, firstResult[,maxResult]])**, this method will return a object array, each of the object contains one row of the result. If your table `User` like:
 
