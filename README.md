@@ -437,3 +437,105 @@ The other scope is the request scope. When a request is come, the servlet will c
 Then, there is a little trick here. After the controller script loaded, the controller function itself will run in the global scope. So you controller function would access both the objects and functions in both scope. That means outside the controller function and the functions it calls, you cannot use the objects and functions that defined in `global.js`.
 
 ### The `global.js` file
+The `global.js` is the file for you to affect the global scope, this file is located at the class path's root folder, and must have the name `global.js`.   You are allowed to import script files here, but unlike the controller script files, you have to put all of your global files under the class path and its sub-folder, and all your global files must use the ".js" suffix. 
+
+As this file runs only once when the runtime environment initializing, so it is recommended that all the objects that used by all (or at lease most) of the controller's function should be put here, just like the database connection pool object, some of your own configurations just like the AWS's access key and access secret. 
+
+The most common configuration you would use here is the $appEnv, which affects your routes, the location of your controller scripts, the MVC resolver, and the interceptors, all of which have already discussed in the above chapters.
+
+## Other Object That Provided
+We provide some objects to simplify your coding. And I promise you, more and more plugins are coming. 
+
+### The `$db` Object
+You can use `imports("$db");` to import this object to both of your scope context. But it's recommended that you should import it into your global scope, and configure you connection there.
+
+All the dependencies won't be imported to the project automatically, so when you use this object, just handle your own dependency in your `pom.xml`. 
+```xml
+    <!-- If you are using mysql -->
+    <dependency>
+        <groupId>mysql</groupId>
+        <artifactId>mysql-connector-java</artifactId>
+        <version>5.1.43</version>
+    </dependency>
+    <!-- If you are using druid connection pool -->
+    <dependency>
+        <groupId>com.alibaba</groupId>
+        <artifactId>druid</artifactId>
+        <version>1.1.2</version>
+    </dependency>
+``` 
+
+If you want to use it in a very simple way, just use: 
+```javascript
+    // Although you should put the import the $db file in your global.js, but every connection has its own life style, so the following code should put to your controller function. 
+    var conn = $db.connect("jdbc:mysql://127.0.0.1:3306/db", "username", "password");
+``` 
+But as we talked above, we don't want to scatter all the usl, username, password everywhere in the code. So the following codes is the better way.
+```javascript
+    // This should be put to your `global.js`
+    $db.addDatasource("default", {
+        url : "jdbc:mysql://127.0.0.1:3306/kjtest",
+        user : "username",
+        password : "password"
+    }); 
+    // and in your controller function, you can use this
+    var con = $db.connect("default");
+    // because the datasource name is "default", you can ignore that argument when getting the connection:
+    var con = $db.connect(); 
+```
+
+*Notice! This method only supports MySql and its variant, MariaDB, and you must handle the mysql driver dependency in your pon.xml.*
+
+If you are not using mysql, or if you want to use some connection pool, you use this:
+```javascript
+    // If you use the Druid connection pool, put this to your `global.js`
+    $db.addDatasource("druid", "com.alibaba.druid.pool.DruidDataSource", {
+        url : "jdbc:mysql://127.0.0.1:3306/kjtest",
+        username : "username",
+        password : "password",
+        filters : "stat",
+        maxActive : 20,
+        initialSize : 1,
+        maxWait : 60000,
+        minIdel : 1,
+        timeBetweenEvictionRunsMillis : 60000,
+        minEvictableIdleTimeMillis : 30000,
+        testWhileIdle : true,
+        testOnBorrow : false,
+        testOnReturn : false,
+        poolPreparedStatements : true,
+        maxOpenPreparedStatements : 20
+    }).init(); // Not every datasouce has this init method, please check before you write this.
+    // Then in your controller function
+    var conn = $db.connect("druid");
+```
+
+####The Connection Object
+After you get the connection object, you can use **select, insert, update, delete** to do your business. 
+* **conn.select(sql [, params][, firstResult[,maxResult]])**, this method will return a object array, each of the object contains one row of the result. If your table `User` like:
+
+id | userName | userEmail | sex
+------ | ------ | ------ | ------
+1 | John | john@abc.com | male
+2 | Mike | mike@abc.com | male
+3 | Mary | mary@abc.com | female
+
+And in your code
+```javascript
+    var conn = $db.connect("druid");
+    var result = conn.select("select * from User where sex = ?", [ "male" ]); // If the second argument is the parameter array, its length must equal the counting of '?' in the previous string argument which is the SQL sentence.
+    print(JSON.stringify(result);
+```
+Then you will find the output will be:
+```javascript
+[ 
+    {"id": 1, "userName": "John", "userEmail": "john@abc.com", "sex": "male"}, 
+    {"id": 2, "userName": "Mike", "userEmail": "mike@abc.com", "sex": "male"}
+]
+```
+
+* **conn.insert(tableName, object || object-array)**, insert one or more object to the database, the object's properties must match the columns of this table. 
+
+
+
+ 

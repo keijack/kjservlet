@@ -259,26 +259,28 @@ var $db = (function() {
 				/**
 				 * update
 				 */
-				$ConnectionClass.update = function(table, objs, idFieldName) {
+				$ConnectionClass.update = function(table, objs, where, params) {
 					if (Array.isArray(objs))
-						return updateBatch(table, objs, idFieldName);
+						return updateBatch(table, objs, where, params);
 					else
-						return updateOne(table, objs, idFieldname);
+						return updateOne(table, objs, where, params);
 				};
 
 				/**
 				 * update batch
 				 */
-				var updateBatch = function(table, objs, idFieldName) {
-					var idName = idFieldName || "id";
-					if (!objs || objs.lenght == 0)
+				var updateBatch = function(table, objs, where, parameters) {
+					if (!objs || !Array.isArray(objs) || objs.lenght == 0)
 						throw "Illegal Arguments";
+
+					var updateViaId = !where || !where.trim();
+					var wsql = (where || "where `id` = ?").trim();
 
 					var fields = [];
 					var setFieldsStr = "";
 					var first = objs[0];
 					for ( var key in first) {
-						if (key == idName)
+						if (updateViaId && key == "id")
 							continue;
 						fields.push(key);
 						if (setFieldsStr)
@@ -286,7 +288,7 @@ var $db = (function() {
 						setFieldsStr += "`" + key + "` = ?";
 					}
 
-					var sql = "UPDATE `" + table + "` SET " + setFieldsStr + " where `" + idName + "` =  ?";
+					var sql = "UPDATE `" + table + "` SET " + setFieldsStr + " " + wsql;
 
 					var paramsList = [];
 					for (var i = 0; i < objs.length; i++) {
@@ -299,8 +301,14 @@ var $db = (function() {
 							var val = _kj_util_.json.funVal(obj, key);
 							params.push(val);
 						}
-						var id = _kj_util_.json.funVal(obj, idName);
-						params.push(id);
+						if (updateViaId) {
+							var id = _kj_util_.json.funVal(obj, "id");
+							params.push(id);
+						} else if (parameters) {
+							for (var j = 0; j < parameters.length; j++) {
+								params.push(parameters[j]);
+							}
+						}
 						paramsList.push(params);
 					}
 
@@ -310,26 +318,34 @@ var $db = (function() {
 				/**
 				 * Update one
 				 */
-				var updateOne = function(table, obj, idFieldName) {
-					var idName = idFieldName || "id";
-					var idVal = _kj_util_.json.funVal(obj, idName);
-					if (!idVal)
-						throw "An id field is required";
+				var updateOne = function(table, obj, where, parameters) {
+					var updateViaId = !where || !where.trim();
+					print(updateViaId);
+					var wsql = (where || "where `id` = ?").trim();
 
 					var setFields = "";
 					var params = [];
 					for ( var key in obj) {
-						if (key == idName)
+						if (updateViaId && key == "id")
 							continue;
 						if (setFields)
 							setFields += ",";
 						setFields += "`" + key + "` = ?";
 						var val = _kj_util_.json.funVal(obj, key);
+						// print(val);
 						params.push(val);
 					}
-
-					params.push(idVal);
-					var sql = "UPDATE `" + table + "` SET " + setFields + " where `" + idName + "` =  ?";
+					if (updateViaId) {
+						var idVal = _kj_util_.json.funVal(obj, "id");
+						params.push(idVal);
+					} else if (parameters) {
+						for (var i = 0; i < parameters.length; i++) {
+							params.push(parameters[i]);
+						}
+					}
+					var sql = "UPDATE `" + table + "` SET " + setFields + " " + wsql;
+					print(sql)
+					
 					return $ConnectionClass.execute(sql, params);
 				}
 
