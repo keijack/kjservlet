@@ -71,7 +71,16 @@ var $event = (function() {
 				}
 			};
 		},
-		"off" : function(listener) {
+		"off" : function(evtName) {
+			var listenerKeys = eventListeners[evtName];
+			if (!listenerKeys)
+				return;
+			for (var keyIdx = 0; keyIdx < listenerKeys.length; keyIdx++) {
+				delete callbacks[key];
+			}
+			delete eventListeners[evtName];
+		},
+		"remove" : function(listener) {
 			var key;
 			if (typeof listener === "object")
 				key = listener.key;
@@ -83,7 +92,7 @@ var $event = (function() {
 			var listenerKeys = eventListeners[evtName];
 			if (!listenerKeys)
 				return;
-			for ( var keyIdx in listenerKeys) {
+			for (var keyIdx = 0; keyIdx < listenerKeys.length; keyIdx++) {
 				var key = listenerKeys[keyIdx];
 				var callback = callbacks[key];
 				if (callback)

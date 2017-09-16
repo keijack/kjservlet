@@ -72,7 +72,7 @@ The last portion of the url is the controller function name, which is `sayHello`
 
 There is also another way to route to the controller function, we will talk about that later. 
 
-KJServlet is function related design, it's OK for you to use global functions. In fact, every request will run in its own context -- We will go deeper into that latter -- so it doesn't matter even you have duplicated function names in different controller files. But if you want to arrange your codes well by using spaces and objects, the framework supports that as well. 
+KJServlet is function related design, it's OK for you to use global functions. In fact, every request will run in its own scope -- We will go deeper into that latter -- so it doesn't matter even you have duplicated function names in different controller files. But if you want to arrange your codes well by using spaces and objects, the framework supports that as well. 
 
 In the example above, if you defined an object like the following in your `demo.js` file:
 ```javascript
@@ -95,7 +95,7 @@ Nashorn provides a function load(path), but normally, we recommend you to use a 
 
 There are several reasons that you should use imports():
 
-* In one context -- global.js runs on the global context, and every request runs on its own context --, no matter how many times you call the import function, it only import the same file once. It's more efficient when your scripts import some common function that you define in a common script file.
+* In one scope -- global.js runs on the global scope, and every request runs on its own scope --, no matter how many times you call the import function, it only import the same file once. It's more efficient when your scripts import some common function that you define in a common script file.
 * It's much easier to handle location, it use the relative path rather than absolute path. *Notice! In controller script files and the files imported by them, the relative root is the fileHome you define in `$appEvn`. While in global.js and the files it imports, `classpaht:` is the relative root.* 
 * in imports function, the path can use `.` to separate path just like the package path in Java. Both `org.keijack.kjservlet.service` and `org/keijack/kjservlet/service` are accepted. *Notice! In controller script files and the files imported by them, the suffix is the one you define in `$appEvn`. While in global.js and the files it imports, `.js` is only suffix that supported.*
  
@@ -396,6 +396,44 @@ $appEnv = {
 There are some build-in annotations, which are **"@get", "@head", "@post", "@put", "@delete", "@connect", "@options", "@trace", "@patch"**. As you can see, they are all request methods in lower case. So if you put at lease one of this annotations to a controller function, but the method of a request is not among them, a 404 error will be sent back.  
 
 ## Events
-Many Javascript developers like to use events, however, Nashorn runs on Java environment, so it's weak on supporting for events.
+Many Javascript developers like to use events. But, Nashorn runs on Java environment, so it's weak on supporting events.
 
-However, KJServlet provides a simple event handler. You can register and publish event in script file where the controller function in and all the script that it imports.
+However, KJServlet provides a simple event handler. 
+```javascript
+/**
+ * Register a function to an event
+ **/
+var listener = $event.on("eventName", function(data) {
+	// Your codes  here will be called when an event with the eventName is published.
+});
+
+/**
+ * remove the listener from the event. 
+ **/
+listener.off();
+/**
+ * Or you can use this function.
+ **/
+$event.remove(listener);
+
+/**
+ * Unregister an event, remove all its listeners.
+ **/
+$event.off("eventName");
+
+/**
+ * Publish an event
+ **/
+$event.publish("eventName", data);
+```
+*Notice! The $event works only in the request scope, that means if you cannot use $event object in `global.js` and the script files that imported to it.*
+
+##  Global Scope And Request Scope
+
+There are two kinds of scopes in KJservlet. One is the global scope, which would be initialized after the servlet loaded. Some inner script and the most important global script -- `gloabl.js` -- would be run at this time. 
+
+The other scope is the request scope. When a request is come, the servlet will call dispatch method of the singleton KJServletRuntime. The dispatch method will count the route, find the controller js, and then run it in a new scope.   
+
+Then, there is a little trick here. After the controller script loaded, the controller function itself will run in the global scope. So you controller function would access both the objects and functions in both scope. That means outside the controller function and the functions it calls, you cannot use the objects and functions that defined in `global.js`.
+
+### The `global.js` file
