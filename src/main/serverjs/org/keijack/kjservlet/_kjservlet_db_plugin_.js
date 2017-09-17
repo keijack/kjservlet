@@ -352,7 +352,12 @@ var $db = (function() {
 				/**
 				 * delete
 				 */
-				$ConnectionClass.del = function(table, ids, idFieldName) {
+				$ConnectionClass.del = function(table, where, params){
+					var sql = "DELETE FROM `" + table + "` " + where;
+					return $ConnectionClass.execute(sql, params);
+				};
+				
+				$ConnectionClass.delete = function(table, ids, idFieldName) {
 					if (Array.isArray(ids))
 						return delBatch(table, ids, idFieldName);
 					else
@@ -389,7 +394,7 @@ var $db = (function() {
 						if (!params || Array.isArray(params))
 							return executeOne(sql, params);
 						else {
-							return excuteeOne(sql, [ params ]);
+							return executeOne(sql, [ params ]);
 						}
 					} else {
 						var args = [];

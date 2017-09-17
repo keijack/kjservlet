@@ -535,8 +535,84 @@ Then you will find the output will be:
 ]
 ```
 
-* **conn.insert(tableName, object || object-array)**, insert one or more object to the database, the object's properties must match the columns of this table. 
+* **conn.insert(tableName, object || object-array)**, insert one or more object to the database, the object's properties must match the columns of this table. If want to update insert a list, please make sure that all the objects in that list has the same properties.
+```javascript
+    var conn = $db.connect();  // A data source named "default" is present.
+    // Insert a new row to the table.
+    // The result updateCount to shows how many rows have been inserted. 
+    var updateCount = conn.update("User", {
+        "userName" : "Ben",
+        "userEmail" : "ben@xyz.com",
+        "sex" : "male"
+    });
+    // Insert several rows to the table
+    conn.insert("User", [{
+        "userName" : "Ben",
+        "userEmail" : "ben@xyz.com",
+        "sex" : "male"
+    }, {
+        "userName" : "Kate",
+        "userEmail" : "kate@xyz.com",
+        "sex" : "female"
+    }]);
+```
 
+* **conn.update(tableName, object || object-array[, whereQuery[, queryPrameters]])**,  update a table by given object or object array. If where query sql passed, will update via that condition, or the `id` property in the objects will use. 
+```javascript
+    var conn = $db.connect();  // A data source named "default" is present.
+    // The following sentence will update the row with the id equals 2 in the table `User`, 
+    // because column `sex` hasn't passed, it will keep its old value. 
+    // The result updateCount to shows how many rows have been changed. 
+    var updateCount = conn.update("User", {
+        "id" : 2,
+        "userName" : "Michael",
+        "userEmail" : "mike@bcd.com"
+    });
+    // Update several rows and ignore the result
+    conn.update("User", [ {
+        "id" : 2,
+        "userName" : "Michael",
+        "userEmail" : "mike@bcd.com"
+    }, {
+        "id" : 3,
+        "userName" : "Maria",
+        "userEmail" : "mary@bcd.com"
+    }]);
+	// Update via sql query condition
+    conn.update("User", {
+        "userName" : "Maria",
+        "userEmail" : "mary@xyz.com"
+    }, "where sex = ?", [ "female" ]);    
+```
 
+* **conn.delete(tableName, id || idArray[, idColumnName])**, delete rows via id, you can specify the id column name. 
+```javascript
+    var conn = $db.connect();  // A data source named "default" is present.
+    // Delete the row with id equals 1
+    conn.delete("User", 1);
+    // Delete tow rows
+    conn.delete("User", [ 1, 2 ]);
+    // If your primary key is not `id`, but `pk`
+    conn.delete("User", [ 1, 2 ], "pk");
+```
 
- 
+* **conn.del(tableName, whereSql [, parameters])**, delete rows via the give query conditions. 
+```javascript
+    var conn = $db.connect();  // A data source named "default" is present.
+    // delete all the rows with sex equals `male`
+    conn.del("User", "where sex = ?", ["male"]);
+```
+
+* **conn.execute(sql [, parameters])**, if you want to execute a complicated sql, use this method to do it.
+```javascript
+    var conn = $db.connect();  // A data source named "default" is present.
+    conn.excute("update table `User` set `name` = ? where id in (select id....)", ['John', ...]);
+```
+
+**Caching and AutoCommit**
+
+All connections here will do the caching and auto-commit. 
+
+With the caching, every query will be cached to the connection object, and if you query that again, the result in the cache will be returned. If you don't want caching, you can specify it in the $db object `$db.cache = false` in your `global.js`, or in the connection object to disable only one connection `conn.cache = false`. 
+
+If you want the auto-commit off, set it in the connection object: `conn.autoCommit = false`, then you can use `conn.commit()` and `conn.rollback()` to commit,or roll back.
