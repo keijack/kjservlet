@@ -128,7 +128,7 @@ var $renderer = (function() {
 				try {
 					if (data) {
 						data.toJava = function() {
-							return _kj_util_.json.toJava(this);
+							return Java.asJSONCompatible(this);
 						};
 					}
 					return $appEnv.view.resolver(url, data, headers);
@@ -143,7 +143,7 @@ var $renderer = (function() {
 
 					var template = _kj_freemarker_conf_.getTemplate(url);
 					var stringWriter = new java.io.StringWriter();
-					var javaMap = _kj_util_.json.toJava(data);
+					var javaMap = Java.asJSONCompatible(data);
 					template.process(javaMap, stringWriter);
 					var html = stringWriter.toString();
 					return this.html(html, headers);
@@ -156,7 +156,7 @@ var $renderer = (function() {
 					var template = _kj_velocity_engine_.getTemplate(url);
 					var context = new org.apache.velocity.VelocityContext();
 					for ( var name in data) {
-						var val = _kj_util_.json.toJava(data[name]);
+						var val = Java.asJSONCompatible(data[name]);
 						context.put(name, val);
 					}
 					var stringWriter = new java.io.StringWriter();

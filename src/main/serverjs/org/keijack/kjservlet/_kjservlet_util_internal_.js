@@ -15,40 +15,6 @@ _kj_util_.json.funVal = function(object, key) {
 		return val;
 };
 
-_kj_util_.json.toJava = function(object) {
-	if (typeof object === "object") {
-		if (Array.isArray(object))
-			return this.toJavaArray(object);
-		else
-			return this.toJavaMap(object);
-	} else if (typeof object === "function")
-		return "[function]";
-	else
-		return object;
-};
-
-_kj_util_.json.toJavaMap = function(object) {
-	var JavaHashMap = Java.type("java.util.HashMap");
-	if (typeof object !== "object")
-		return new JavaHashMap();
-	var map = new JavaHashMap();
-	for ( var name in object) {
-		map.put(name, this.toJava(object[name]));
-	}
-	return map;
-};
-
-_kj_util_.json.toJavaArray = function(jarray) {
-	var JavaObjArray = Java.type("java.lang.Object[]");
-	if (!Array.isArray(jarray))
-		return new JavaObjArray(0);
-	var array = new JavaObjArray(jarray.length);
-	for (var i = 0; i < jarray.length; i++) {
-		array[i] = this.toJava(jarray[i]);
-	}
-	return array;
-}
-
 _kj_util_.json.extand = function(target, o1) {
 	if (!o1)
 		return target;
