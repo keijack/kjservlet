@@ -616,3 +616,32 @@ All connections here will do the caching and auto-commit.
 With the caching, every query will be cached to the connection object, and if you query that again, the result in the cache will be returned. If you don't want caching, you can specify it in the $db object `$db.cache = false` in your `global.js`, or in the connection object to disable only one connection `conn.cache = false`. 
 
 If you want the auto-commit off, set it in the connection object: `conn.autoCommit = false`, then you can use `conn.commit()` and `conn.rollback()` to commit,or roll back.
+
+### The `$log` Object
+KJServlet provides a simple logger for you to record your messages. By default, it use only the system standard output stream. All of its method is:
+
+* **$log.d(tag, message, error)**, log a debug message, `error` is a optional parameter. 
+* **$log.i(tag, message, error)**, log a info message, `error` is a optional parameter.
+* **$log.w(tag, message, error)**, log a warn message, `error` is a optional parameter.
+* **$log.e(tag, message, error)**, log a error message, `error` is a optional parameter.
+* **$log.f(tag, message, error)**, log a fatal message, `error` is a optional parameter.
+
+The default log level is "info", that means if you use `$log.d(tag, message)`, there will be no log shows in the console. Please set the debug level in the `global.js`
+```javascript
+$log.level = "debug";
+```
+
+We also support log4j logger, if you want to use it, replace the default `$log` object in the `global.js`:
+```javascript
+$log = $logFac.getLogger("log4j");
+```
+The interface of the log4j logger is just as the same as the default logger. However, the $log.level will not work, and you have to create a log4j.properties to handle where and how the messages being logged. (Please read the log4j user guids for more information).
+
+You should also handle the dependency yourself, in your `pom.xml`, you should add this dependency:
+```xml
+    <dependency>
+        <groupId>log4j</groupId>
+        <artifactId>log4j</artifactId>
+        <version>1.2.17</version>
+    </dependency>
+```
