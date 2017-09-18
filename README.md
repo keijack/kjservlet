@@ -384,11 +384,14 @@ $appEnv = {
     interceptors : [ {
         intercept : ["@myOwnAnno"], // It's OK to use just a string here, rather than an array.
         before : function(req, res) {
-        	// do things here before the controller function being called
-        	return true; // you must return true to tell the framework that continue to call the controller function, or not the controller function will not be called.
+            // do things here before the controller function being called
+            return true; // you must return true to tell the framework that continue to call the controller function, or not the controller function will not be called.
         },
         after : function(req, res, result) {
-        	// do things after the controller function been called
+            // do things after the controller function been called
+        },
+        onError : function(req, res, error) {
+            // do things when error occurs.
         } 
     } ],  // if you only have one interceptor, you can put an object here rather that an array.
 }
