@@ -341,7 +341,7 @@ var _kj_dispatch_and_run_ = (function() {
 		} else if (result._content_type == "forward") {
 			if (result.data) {
 				for ( var name in result.data) {
-					var val = _kj_util_.json.toJava(result.data[name]);
+					var val = Java.asJSONCompatible(result.data[name]);
 					request.setAttribute(name, val);
 				}
 			}
