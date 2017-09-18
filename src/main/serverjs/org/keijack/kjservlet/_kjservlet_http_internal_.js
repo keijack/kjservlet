@@ -138,7 +138,7 @@ var $renderer = (function() {
 
 					var template = _kj_freemarker_conf_.getTemplate(url);
 					var stringWriter = new java.io.StringWriter();
-					var javaMap = Java.asJSONCompatible(data);
+					var javaMap = _kj_util_.json.toJava(data);
 					template.process(javaMap, stringWriter);
 					var html = stringWriter.toString();
 					return this.html(html, headers);
@@ -151,7 +151,7 @@ var $renderer = (function() {
 					var template = _kj_velocity_engine_.getTemplate(url);
 					var context = new org.apache.velocity.VelocityContext();
 					for ( var name in data) {
-						var val = Java.asJSONCompatible(data[name]);
+						var val = _kj_util_.json.toJava(data[name]);
 						context.put(name, val);
 					}
 					var stringWriter = new java.io.StringWriter();
@@ -336,7 +336,7 @@ var _kj_dispatch_and_run_ = (function() {
 		} else if (result._content_type == "forward") {
 			if (result.data) {
 				for ( var name in result.data) {
-					var val = Java.asJSONCompatible(result.data[name]);
+					var val = _kj_util_.json.toJava(result.data[name]);
 					request.setAttribute(name, val);
 				}
 			}
