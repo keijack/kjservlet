@@ -126,11 +126,6 @@ var $renderer = (function() {
 			var url = $appEnv.view.prefix + addr + $appEnv.view.suffix;
 			if (typeof $appEnv.view.resolver == "function") {
 				try {
-					if (data) {
-						data.toJava = function() {
-							return Java.asJSONCompatible(this);
-						};
-					}
 					return $appEnv.view.resolver(url, data, headers);
 				} catch (err) {
 					return this.error(500, err);

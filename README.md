@@ -334,9 +334,8 @@ $appEnv = {
     },
     resources : [ "*.html", "/images/*" ],
     view : {
-        resolver : function(viewFileLocation, javaMap, headers){
+        resolver : function(viewFileLocation, data, headers){
             // viewFileLocation is the one that has already contacted with the prefix and suffix.
-            // and javaMap has been already converted to a Java Map.
             // you can do your own logic here
             var html = ...;
             // finally don't forget to return the result object.
