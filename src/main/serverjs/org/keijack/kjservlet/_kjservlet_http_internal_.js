@@ -276,6 +276,7 @@ var _kj_dispatch_and_run_ = (function() {
 
 		var aopBeforeFunctions = [];
 		var aopAfterFunctions = [];
+		var aopOnErrorFunctions = [];
 		if ($appEnv.interceptors) {
 			// AOP
 			var interceptors = _kj_util_.array.getArray($appEnv.interceptors);
@@ -289,6 +290,8 @@ var _kj_dispatch_and_run_ = (function() {
 						aopBeforeFunctions.push(interceptor.before);
 					if (interceptor.after && typeof interceptor.after == "function")
 						aopAfterFunctions.push(interceptor.after);
+					if (interceptor.onError && typeof interceptor.onError == "function")
+						aopOnErrorFunctions.push(interceptor.onError);
 				}
 			}
 		}
@@ -298,7 +301,19 @@ var _kj_dispatch_and_run_ = (function() {
 			if (!pass)
 				return;
 		}
-		var result = func(req, res);
+		var result;
+		try {
+			result = func(req, res);
+		} catch (err) {
+			if (aopOnErrorFunctions.length == 0)
+				throw err;
+			else {
+				for (var i = 0; i < aopOnErrorFunctions.length; i++) {
+					aopOnErrorFunctions[i](req, res, err);
+				}
+				return;
+			}
+		}
 		for (var i = 0; i < aopAfterFunctions.length; i++) {
 			aopAfterFunctions[i](req, res, result);
 		}
