@@ -219,6 +219,8 @@ var _kj_dispatch_and_run_ = (function() {
 		// prepare a new context for the controller
 		var ctx = new JavaSimpleScriptContext();
 		ctx.setBindings(__kj_nashorn_engine__.createBindings(), JavaScriptContext.ENGINE_SCOPE);
+		var requestContext = {};
+		ctx.setAttribute("$context", requestContext, JavaScriptContext.ENGINE_SCOPE);
 		ctx.setAttribute("$appEnv", $appEnv, JavaScriptContext.ENGINE_SCOPE);
 		ctx.setAttribute("$classpath", $classpath, JavaScriptContext.ENGINE_SCOPE);
 		ctx.setAttribute("$servletContextRoot", $servletContextRoot, JavaScriptContext.ENGINE_SCOPE);
@@ -292,7 +294,7 @@ var _kj_dispatch_and_run_ = (function() {
 		}
 
 		for (var i = 0; i < aopBeforeFunctions.length; i++) {
-			var pass = aopBeforeFunctions[i](req, res);
+			var pass = aopBeforeFunctions[i](req, res, requestContext);
 			if (!pass)
 				return;
 		}
@@ -304,13 +306,13 @@ var _kj_dispatch_and_run_ = (function() {
 				throw err;
 			else {
 				for (var i = 0; i < aopOnErrorFunctions.length; i++) {
-					aopOnErrorFunctions[i](req, res, err);
+					aopOnErrorFunctions[i](req, res, err, requestContext);
 				}
 				return;
 			}
 		}
 		for (var i = 0; i < aopAfterFunctions.length; i++) {
-			aopAfterFunctions[i](req, res, result);
+			aopAfterFunctions[i](req, res, result, requestContext);
 		}
 		if (!result)
 			return;

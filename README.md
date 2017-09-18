@@ -382,19 +382,46 @@ $appEnv = {
     },
     interceptors : [ {
         intercept : ["@myOwnAnno"], // It's OK to use just a string here, rather than an array.
-        before : function(req, res) {
+        before : function(req, res, ctx) {
             // do things here before the controller function being called
             return true; // you must return true to tell the framework that continue to call the controller function, or not the controller function will not be called.
         },
-        after : function(req, res, result) {
+        after : function(req, res, result, ctx) {
             // do things after the controller function been called
         },
-        onError : function(req, res, error) {
+        onError : function(req, res, error, ctx) {
             // do things when error occurs.
         } 
     } ],  // if you only have one interceptor, you can put an object here rather that an array.
 }
 ```
+
+The `ctx` object pass to all your AOP functions is a global object in your Request Scope, you can use `$context` to access it in your controller script files.
+
+For example, you can use this object to open a connection that you can use in a whole request thread.  (About the $db object, check the **The `$db` Object** section)
+```javascript
+// In the global.js
+$appEnv = {
+    ...
+    interceptors : [ {
+        intercept : ["@myOwnAnno"], // It's OK to use just a string here, rather than an array.
+        before : function(req, res, ctx) {
+            ctx.conn = $db.connect(); // "default" data source is used.
+            ctx.conn.autoCommit = false;
+            return true; 
+        },
+        after : function(req, res, result, ctx) {
+            ctx.conn.commit();
+        },
+        onError : function(req, res, error, ctx) {
+            ctx.conn.rollback();
+        }
+    }
+};
+// In your controller script and the script files it imports.
+$context.conn.insert("TableName", {...});
+```
+
 There are some build-in annotations, which are **"@get", "@head", "@post", "@put", "@delete", "@connect", "@options", "@trace", "@patch"**. As you can see, they are all request methods in lower case. So if you put at lease one of this annotations to a controller function, but the method of a request is not among them, a 404 error will be sent back.  
 
 ## Events
