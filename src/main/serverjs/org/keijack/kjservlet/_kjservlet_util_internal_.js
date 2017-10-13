@@ -36,10 +36,27 @@ _kj_util_.json.toJava = function(object) {
 			return this.toJavaArray(object);
 		else
 			return this.toJavaMap(object);
-	} else if (typeof object === "function")
-		return "[function]";
-	else
+	} else if (typeof object === "function") {
+		var JSFunctionWrapper = Java.type("org.keijack.kjservlet.JSFunctionWrapper");
+		var func = new JSFunctionWrapper({
+			call : function(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9) {
+				var res = object.call(object, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+				// return _kj_util_.json.toJava(res);
+				return res;
+			},
+			apply : function(args) {
+				var argArr = [];
+				for (var i = 0; i < args.length; i++) {
+					argArr[i] = args[i];
+				}
+				var res = object.apply(object, argArr);
+				return _kj_util_.json.toJava(res);
+			}
+		});
+		return func;
+	} else
 		return object;
+
 };
 
 _kj_util_.json.toJavaMap = function(object) {
