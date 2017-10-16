@@ -31,18 +31,21 @@ _kj_util_.json.extand = function(target, o1) {
 };
 
 _kj_util_.json.toJava = function(object) {
-	if (typeof object === "object") {
-		if (Array.isArray(object))
+	if (typeof object === "object" && object["class"] && object["hashCode"] && typeof object["hashCode"] === "function"
+			&& Object.toString(object["hashCode"]) === "function Object() { [native code] }") { // Java Class
+		return object;
+	} else if (typeof object === "object") {
+		if (Array.isArray(object)) {
 			return this.toJavaArray(object);
-		else
+		} else {
 			return this.toJavaMap(object);
+		}
 	} else if (typeof object === "function") {
 		var JSFunctionWrapper = Java.type("org.keijack.kjservlet.JSFunctionWrapper");
 		var func = new JSFunctionWrapper({
 			call : function(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9) {
 				var res = object.call(object, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
-				// return _kj_util_.json.toJava(res);
-				return res;
+				return _kj_util_.json.toJava(res);
 			},
 			apply : function(args) {
 				var argArr = [];
@@ -56,7 +59,6 @@ _kj_util_.json.toJava = function(object) {
 		return func;
 	} else
 		return object;
-
 };
 
 _kj_util_.json.toJavaMap = function(object) {
