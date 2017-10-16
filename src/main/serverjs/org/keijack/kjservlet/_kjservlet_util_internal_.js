@@ -32,7 +32,8 @@ _kj_util_.json.extand = function(target, o1) {
 
 _kj_util_.json.toJava = function(object) {
 	if (typeof object === "object" && object["class"] && object["hashCode"] && typeof object["hashCode"] === "function"
-			&& Object.toString(object["hashCode"]) === "function Object() { [native code] }") { // Java Class
+			&& Object.toString(object["hashCode"]) === "function Object() { [native code] }") {
+		// Java Object
 		return object;
 	} else if (typeof object === "object") {
 		if (Array.isArray(object)) {
@@ -49,8 +50,10 @@ _kj_util_.json.toJava = function(object) {
 			},
 			apply : function(args) {
 				var argArr = [];
-				for (var i = 0; i < args.length; i++) {
-					argArr[i] = args[i];
+				if (args) {
+					for (var i = 0; i < args.length; i++) {
+						argArr[i] = args[i];
+					}
 				}
 				var res = object.apply(object, argArr);
 				return _kj_util_.json.toJava(res);

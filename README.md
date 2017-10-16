@@ -323,6 +323,46 @@ So in your template file -- take freemarker for example -- would probably like:
 </body>
 </html>
 ``` 
+Functions are also allowed in the data object, please use method `call` or `apply` to use functions.
+
+*Notice: `call` method accepts at most 10 arguments. And `apply` method accepts an array argument.*  
+
+Assume that your data object 
+```javascript
+    var data = {"userName": "Jhon",
+                "sex": "male",
+                "isAdult": function(){
+                	// Notice: please don't use `this` here, for the function will be wrapped into a Java Object called JSFunctionWrapper. 
+                	return data.age >= 18;
+                },
+                "age": 28,
+                "department": { "name": "HR",
+                                "phone": "+01xxxxxx",
+                },
+                "subordinates": ["Mike", "Lily"]
+    };
+```
+
+*Notice: please don't use `this` in this kind of functions, for they will be wrapped into a Java Object called JSFunctionWrapper which `this` will point to.*
+
+Then in your template file,
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Personal Details</title>
+</head>
+<body>
+    <h1>Personal Details of ${userName}</h1>
+    <p>sex: ${sex}</p>
+    <p>is adult: ${isAult.call()}</p>
+    <p>age: ${age}</p>
+    <p>department: ${department.name}</p>
+    <p>subordinates: <#list subordinates as sbn>${sbn}, </#list>
+</body>
+</html>
+```  
+ 
 You can even customized your own resolver:
 ```javascript
 $appEnv = {
@@ -463,7 +503,7 @@ There are two kinds of scopes in KJservlet. One is the global scope, which would
 
 The other scope is the request scope. When a request is come, the servlet will call dispatch method of the singleton KJServletRuntime. The dispatch method will count the route, find the controller js, and then run it in a new scope.   
 
-Then, there is a little trick here. After the controller script loaded, the controller function itself will run in the global scope. So you controller function would access both the objects and functions in both scope. That means outside the controller function and the functions it calls, you cannot use the objects and functions that defined in `global.js`.
+Then, there is a little trick here. After the controller script loaded, the controller function itself will run in the global scope. So your controller functions have the ability to access the objects and functions in both scope. That means outside the controller function and the functions it calls, you cannot use the objects and functions that defined in `global.js`.
 
 ### The `global.js` file
 The `global.js` is the file for you to affect the global scope, this file is located at the class path's root folder, and must have the name `global.js`.   You are allowed to import script files here, but unlike the controller script files, you have to put all of your global files under the class path and its sub-folder, and all your global files must use the ".js" suffix. 
@@ -513,7 +553,7 @@ But as we talked above, we don't want to scatter all the usl, username, password
     var con = $db.connect(); 
 ```
 
-*Notice! This method only supports MySql and its variant, MariaDB, and you must handle the mysql driver dependency in your pon.xml.*
+*Notice! This method only supports MySql and its variant, MariaDB, and you must handle the mysql driver dependency in your pom.xml.*
 
 If you are not using mysql, or if you want to use some connection pool, you use this:
 ```javascript
@@ -569,7 +609,7 @@ Then you will find the output will be:
     var conn = $db.connect();  // A data source named "default" is present.
     // Insert a new row to the table.
     // The result updateCount to shows how many rows have been inserted. 
-    var updateCount = conn.update("User", {
+    var updateCount = conn.insert("User", {
         "userName" : "Ben",
         "userEmail" : "ben@xyz.com",
         "sex" : "male"
