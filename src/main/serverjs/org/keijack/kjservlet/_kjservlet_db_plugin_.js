@@ -320,7 +320,7 @@ var $db = (function() {
 				 */
 				var updateOne = function(table, obj, where, parameters) {
 					var updateViaId = !where || !where.trim();
-					print(updateViaId);
+					// print(updateViaId);
 					var wsql = (where || "where `id` = ?").trim();
 
 					var setFields = "";
@@ -344,7 +344,7 @@ var $db = (function() {
 						}
 					}
 					var sql = "UPDATE `" + table + "` SET " + setFields + " " + wsql;
-					print(sql)
+					// print(sql)
 					
 					return $ConnectionClass.execute(sql, params);
 				}
