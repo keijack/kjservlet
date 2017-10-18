@@ -8,6 +8,7 @@
 			suffix : "",
 			parameterJSONFriendly : true,
 		},
+		routes : {},
 		view : {
 			resolver : "jsp",
 			prefix : "",
@@ -16,6 +17,19 @@
 	};
 
 	_kj_util_.json.extand($appEnv, appEnvDefaultConf);
+
+	$appEnv._routes_ = {};
+
+	for ( var routeKey in $appEnv.routes) {
+		var newRouteKey = "/" + routeKey;
+		newRouteKey = newRouteKey.replaceAll("//", "/");
+		if ($appEnv._routes_[newRouteKey])
+			continue;
+		$appEnv._routes_[newRouteKey] = $appEnv.routes[routeKey];
+	}
+
+	$appEnv._routedUrls_ = Object.keys($appEnv._routes_);
+
 	$appEnv.res = {
 		"_starts_" : [],
 		"_ends_" : [],
@@ -356,7 +370,7 @@ var _kj_dispatch_and_run_ = (function() {
 
 	var getController = function(req) {
 		var formatLocation = function(path) {
-			var locationPath = path.replaceAll(".", "/").replaceAll("//", "/");
+			var locationPath = path.replaceAll("//", "/");
 			var locationNodes = locationPath.split("/");
 			locationPath = "";
 			for (var i = 0; i < locationNodes.length; i++) {
@@ -402,9 +416,13 @@ var _kj_dispatch_and_run_ = (function() {
 					pathWithoutValues += "/" + node;
 				}
 			}
+			if ($appEnv._routedUrls_.indexOf(pathWithoutValues) >= 0) {
+				pathWithoutValues = $appEnv._routes_[pathWithoutValues];
+			}
+
 			idx = pathWithoutValues.lastIndexOf("/");
 
-			ctl.location = formatLocation($appEnv.controller.pkg + pathWithoutValues.substring(0, idx));
+			ctl.location = formatLocation(_kj_util_.pkg.toPath($appEnv.controller.pkg) + pathWithoutValues.substring(0, idx));
 			ctl.func = pathWithoutValues.substring(idx + 1);
 			ctl.args = [];
 		}
