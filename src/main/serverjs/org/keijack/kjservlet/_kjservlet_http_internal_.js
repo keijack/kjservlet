@@ -8,7 +8,7 @@
 			suffix : "",
 			parameterJSONFriendly : true,
 		},
-		alias : {},
+		aliases : {},
 		view : {
 			resolver : "jsp",
 			prefix : "",
@@ -20,12 +20,12 @@
 
 	$appEnv._routes_ = {};
 
-	for ( var routeKey in $appEnv.alias) {
+	for ( var routeKey in $appEnv.aliases) {
 		var newRouteKey = "/" + routeKey;
 		newRouteKey = newRouteKey.replaceAll("//", "/");
 		if ($appEnv._routes_[newRouteKey])
 			continue;
-		$appEnv._routes_[newRouteKey] = $appEnv.alias[routeKey];
+		$appEnv._routes_[newRouteKey] = $appEnv.aliases[routeKey];
 	}
 
 	$appEnv._routedUrls_ = Object.keys($appEnv._routes_);

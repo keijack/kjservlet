@@ -99,7 +99,7 @@ $appEnv = {
                                                        // to you url. 
         suffix : "", // If your url have a suffix, like ".do", please set it here
     },
-    alias : {
+    aliases : {
     	"/yieldMyName" : "/demo/person.yieldName",
     },
     resources : [ "*.html", "/images/*" ], // the url match these pattern will be treated as the static files
