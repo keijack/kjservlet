@@ -347,7 +347,7 @@ So in your template file -- take freemarker for example -- would probably like:
 ``` 
 Functions are also allowed in the data object, please use method `call` or `apply` to use functions.
 
-*Notice: `call` method accepts at most 10 arguments. And `apply` method accepts an array argument.*  
+*Notice: `call` method accepts at most 10 arguments. And `apply` method accepts an array as the only argument.*  
 
 Assume that your data object 
 ```javascript
@@ -365,7 +365,7 @@ Assume that your data object
     };
 ```
 
-*Notice: please don't use `this` in this kind of functions, for they will be wrapped into a Java Object called JSFunctionWrapper which `this` will point to.*
+*Notice: please don't use `this` in this kind of functions, for they will be wrapped into a Java Object `JSFunctionWrapper` which `this` will point to.*
 
 Then in your template file,
 ```html
@@ -409,13 +409,13 @@ $appEnv = {
 }
 ```
 ## Annotations and AOP
-Unlike Java, there are no build-in annotations in Javascript, and because of that you can defined your object any time, any where, it's pretty hard to intercept into the logic in runtime. However, we play a little trick for that. 
+Unlike Java, there are no build-in annotation support in Javascript, and because of that you can defined your object any time, any where, it's pretty hard to intercept into the logic in runtime. However, we play a little trick for that. 
   
 If you are familiar with Javascript, you must have heard of the **strict mode**. If you want to run a function in a strict mode, you just need to add a line "use strict" to first line of the function body. Our annotations just like that. 
 ```javascript
 function dosth(req){
     "use strict";
-    "@post"; // build-in annotations
+    "@post"; // KJSeverlet build-in annotations, this controller accepts only "POST" request.
     "@myOwnAnno"; // user-defined annotations
     //your function codes here
     ...
@@ -523,7 +523,7 @@ $event.publish("eventName", data);
 
 There are two kinds of scopes in KJservlet. One is the global scope, which would be initialized after the servlet loaded. Some inner script and the most important global script -- `gloabl.js` -- would be run at this time. 
 
-The other scope is the request scope. When a request is come, the servlet will call dispatch method of the singleton KJServletRuntime. The dispatch method will count the route, find the controller js, and then run it in a new scope.   
+The other scope is the request scope. When a request is come, the servlet will call dispatch method of the singleton KJServletRuntime. The dispatch method will compute the route, find the controller js, and then run it in a new scope.   
 
 Then, there is a little trick here. After the controller script loaded, the controller function itself will run in the global scope. So your controller functions have the ability to access the objects and functions in both scope. That means outside the controller function and the functions it calls, you cannot use the objects and functions that defined in `global.js`.
 
@@ -532,10 +532,10 @@ The `global.js` is the file for you to affect the global scope, this file is loc
 
 As this file runs only once when the runtime environment initializing, so it is recommended that all the objects that used by all (or at lease most) of the controller's function should be put here, just like the database connection pool object, some of your own configurations just like the AWS's access key and access secret. 
 
-The most common configuration you would use here is the $appEnv, which affects your routes, the location of your controller scripts, the MVC resolver, and the interceptors, all of which have already discussed in the above chapters.
+The most common configuration you would use here is the $appEnv, which affects your routes, the location of your controller scripts, the MVC resolver, and the interceptors, all of which have already discussed in above chapters.
 
 ## Other Object That Provided
-We provide some objects to simplify your coding. And I promise you, more and more plugins are coming. 
+We provide some objects to simplify your coding. And more and more plugins are coming. 
 
 ### The `$db` Object
 You can use `imports("$db");` to import this object to both of your scope context. But it's recommended that you should import it into your global scope, and configure you connection there.
@@ -561,7 +561,7 @@ If you want to use it in a very simple way, just use:
     // Although you should put the import the $db file in your global.js, but every connection has its own life style, so the following code should put to your controller function. 
     var conn = $db.connect("jdbc:mysql://127.0.0.1:3306/db", "username", "password");
 ``` 
-But as we talked above, we don't want to scatter all the usl, username, password everywhere in the code. So the following codes is the better way.
+But as we talked above, we don't want to scatter all the url, username, password everywhere in the code. So the following solution is a better way.
 ```javascript
     // This should be put to your `global.js`
     $db.addDatasource("default", {
@@ -709,7 +709,7 @@ With the caching, every query will be cached to the connection object, and if yo
 If you want the auto-commit off, set it in the connection object: `conn.autoCommit = false`, then you can use `conn.commit()` and `conn.rollback()` to commit,or roll back.
 
 ### The `$log` Object
-KJServlet provides a simple logger for you to record your messages. By default, it use only the system standard output stream. All of its method is:
+KJServlet provides a simple logger for you to record your messages. By default, it use only the system standard output stream. All of its methods are:
 
 * **$log.d(tag, message, error)**, log a debug message, `error` is a optional parameter. 
 * **$log.i(tag, message, error)**, log a info message, `error` is a optional parameter.
