@@ -87,6 +87,28 @@ Then you can use the following url to visit:
 ```
 http://[your_server_host]:[your_server_port]/[your_servlet_context]/demo/person.yieldName?name=John
 ```
+You can add alias to routes, at your $appEnv object, add a property named `alias`. for example:
+```javascript
+$appEnv = {
+    fileHome : "/WEB-INF/server-js/", // Where your js files are, default is "classpath:"
+    fileSuffix : ".js", // What suffix is your js file, default is "js"
+    controller : {
+        pkg : "org.keijack.kjservlet.demo.controller", // The package of the js file, when routing,
+                                                       // you don't need to add  
+                                                       // /org/keijack/kjservlet/demo/controller/  
+                                                       // to you url. 
+        suffix : "", // If your url have a suffix, like ".do", please set it here
+    },
+    alias : {
+    	"/yieldMyName" : "/demo/person.yieldName",
+    },
+    resources : [ "*.html", "/images/*" ], // the url match these pattern will be treated as the static files
+};
+```
+Then the following url can also visit the controller defined in the example above. 
+```
+http://[your_server_host]:[your_server_port]/[your_servlet_context]/yieldMyName?name=John
+```
 
 ## Import Other Script Files
 The last chapter shows you how to route a url to a function in a Javascript file. You won't just define one function as the controller in most cases. You will have to call other functions, but how could you call the function in other script files?
