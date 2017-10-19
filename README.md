@@ -51,9 +51,9 @@ As you can see, there are no route configurations in the demo, so how the framew
 
 Take the demo in the **Getting Start** for example, if you put the demo.js to a folder `path` in the class path (so that the real path of the demo.js will be `[webcontent]/WEB-INF/classes/path/demo.js`), then you will use `http://[your_server_host]:[your_server_port]/[your_servlet_context]/path/demo/sayHello?name=World` to visit the controller function. 
 
-In fact, you do have some ways to configure the route. A `global.js` in the classpath root folder will be run when the runtime environment is being prepared. In this file, you can redefined a global variable $appEnv, which will affect the routing. 
+In fact, you do have some ways to configure the route. A `global.js` in the classpath root folder will be run when the runtime environment is being prepared. In this file, you can redefined a global variable $webapp, which will affect the routing. 
 ```javascript
-$appEnv = {
+$webapp = {
     fileHome : "/WEB-INF/server-js/", // Where your js files are, default is "classpath:"
     fileSuffix : ".js", // What suffix is your js file, default is "js"
     controller : {
@@ -87,9 +87,9 @@ Then you can use the following url to visit:
 ```
 http://[your_server_host]:[your_server_port]/[your_servlet_context]/demo/person.yieldName?name=John
 ```
-You can add alias to routes, at your $appEnv object, add a property named `alias`. for example:
+You can add alias to routes, at your $webapp object, add a property named `alias`. for example:
 ```javascript
-$appEnv = {
+$webapp = {
     fileHome : "/WEB-INF/server-js/", // Where your js files are, default is "classpath:"
     fileSuffix : ".js", // What suffix is your js file, default is "js"
     controller : {
@@ -280,9 +280,9 @@ function dosth(req){
 	return $renderer.view("/WEB-INF/pages/view.jsp", serviceResult);
 }
 ```
-The template engine is JSP by default, if you want to change it, please set it up in $appEnv in your `global.js` file.
+The template engine is JSP by default, if you want to change it, please set it up in $webapp in your `global.js` file.
 ```javascript
-$appEnv = {
+$webapp = {
     fileHome : "...", 
     fileSuffix : ".js",
     controller : {
@@ -387,7 +387,7 @@ Then in your template file,
  
 You can even customized your own resolver:
 ```javascript
-$appEnv = {
+$webapp = {
     fileHome : "...", 
     fileSuffix : ".js",
     controller : {
@@ -427,9 +427,9 @@ So, the annotations of this controller function are ["@post", "@myOwnAnno"].
 
 *Notice! Annotations can only be read in the Controller functions!*
 
-Now, you know how to put annotations, but how to use it? Let go back to $appEnv in the `global.js`;
+Now, you know how to put annotations, but how to use it? Let go back to $webapp in the `global.js`;
 ```javascript
-$appEnv = {
+$webapp = {
     fileHome : "...", 
     fileSuffix : ".js",
     controller : {
@@ -463,7 +463,7 @@ The `ctx` object pass to all your AOP functions is a global object in your Reque
 For example, you can use this object to open a connection that you can use in a whole request thread.  (About the $db object, check the **The `$db` Object** section)
 ```javascript
 // In the global.js
-$appEnv = {
+$webapp = {
     ...
     interceptors : [ {
         intercept : ["@myOwnAnno"], // It's OK to use just a string here, rather than an array.
@@ -532,7 +532,7 @@ The `global.js` is the file for you to affect the global scope, this file is loc
 
 As this file runs only once when the runtime environment initializing, so it is recommended that all the objects that used by all (or at lease most) of the controller's function should be put here, just like the database connection pool object, some of your own configurations just like the AWS's access key and access secret. 
 
-The most common configuration you would use here is the $appEnv, which affects your routes, the location of your controller scripts, the MVC resolver, and the interceptors, all of which have already discussed in above chapters.
+The most common configuration you would use here is the $webapp, which affects your routes, the location of your controller scripts, the MVC resolver, and the interceptors, all of which have already discussed in above chapters.
 
 ## Other Object That Provided
 We provide some objects to simplify your coding. And more and more plugins are coming. 

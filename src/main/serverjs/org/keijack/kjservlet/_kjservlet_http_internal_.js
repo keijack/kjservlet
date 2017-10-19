@@ -1,5 +1,5 @@
 (function() {
-	var appEnvDefaultConf = {
+	var webappDefault = {
 		fileHome : "classpath:",
 		fileSuffix : ".js",
 		controller : {
@@ -16,21 +16,21 @@
 		}
 	};
 
-	_kj_util_.json.extand($appEnv, appEnvDefaultConf);
+	_kj_util_.json.extand($webapp, webappDefault);
 
-	$appEnv._routes_ = {};
+	$webapp._routes_ = {};
 
-	for ( var routeKey in $appEnv.aliases) {
+	for ( var routeKey in $webapp.aliases) {
 		var newRouteKey = "/" + routeKey;
 		newRouteKey = newRouteKey.replaceAll("//", "/");
-		if ($appEnv._routes_[newRouteKey])
+		if ($webapp._routes_[newRouteKey])
 			continue;
-		$appEnv._routes_[newRouteKey] = $appEnv.aliases[routeKey];
+		$webapp._routes_[newRouteKey] = $webapp.aliases[routeKey];
 	}
 
-	$appEnv._routedUrls_ = Object.keys($appEnv._routes_);
+	$webapp._routedUrls_ = Object.keys($webapp._routes_);
 
-	$appEnv.res = {
+	$webapp.res = {
 		"_starts_" : [],
 		"_ends_" : [],
 		"_includes_" : [],
@@ -57,20 +57,20 @@
 			}
 		}
 	};
-	if ($appEnv.resources) {
-		var resPatterns = _kj_util_.array.getArray($appEnv.resources);
+	if ($webapp.resources) {
+		var resPatterns = _kj_util_.array.getArray($webapp.resources);
 		for (var i = 0; i < resPatterns.length; i++) {
 			var pattern = resPatterns[i];
 			if (!pattern || typeof pattern != "string")
 				continue;
 			if (pattern.startsWith("*") && pattern.endsWith("*")) {
-				$appEnv.res._includes_.push(pattern.replaceAll("*", "").replaceAll("//", "/"));
+				$webapp.res._includes_.push(pattern.replaceAll("*", "").replaceAll("//", "/"));
 			} else if (pattern.startsWith("*")) {
-				$appEnv.res._ends_.push(pattern.replaceAll("*", "").replaceAll("//", "/"));
+				$webapp.res._ends_.push(pattern.replaceAll("*", "").replaceAll("//", "/"));
 			} else if (pattern.endsWith("*")) {
-				$appEnv.res._starts_.push(pattern.replaceAll("*", "").replaceAll("//", "/"));
+				$webapp.res._starts_.push(pattern.replaceAll("*", "").replaceAll("//", "/"));
 			} else {
-				$appEnv.res._equlas_.push(pattern.replaceAll("*", "").replaceAll("//", "/"));
+				$webapp.res._equlas_.push(pattern.replaceAll("*", "").replaceAll("//", "/"));
 			}
 		}
 	}
@@ -137,16 +137,16 @@ var $renderer = (function() {
 			};
 		},
 		view : function(addr, data, headers) {
-			var url = $appEnv.view.prefix + addr + $appEnv.view.suffix;
-			if (typeof $appEnv.view.resolver == "function") {
+			var url = $webapp.view.prefix + addr + $webapp.view.suffix;
+			if (typeof $webapp.view.resolver == "function") {
 				try {
-					return $appEnv.view.resolver(url, data, headers);
+					return $webapp.view.resolver(url, data, headers);
 				} catch (err) {
 					return this.error(500, err);
 				}
-			} else if ($appEnv.view.resolver == "jsp") {
+			} else if ($webapp.view.resolver == "jsp") {
 				return this.forward(url, data, headers);
-			} else if ($appEnv.view.resolver == "freemarker") {
+			} else if ($webapp.view.resolver == "freemarker") {
 				try {
 					imports("kjinner:_kjservlet_http_freemarker_plugin_");
 
@@ -159,7 +159,7 @@ var $renderer = (function() {
 				} catch (err) {
 					return this.error(500, err);
 				}
-			} else if ($appEnv.view.resolver == "velocity") {
+			} else if ($webapp.view.resolver == "velocity") {
 				try {
 					imports("kjinner:_kjservlet_http_velocity_plugin_");
 					var template = _kj_velocity_engine_.getTemplate(url);
@@ -176,7 +176,7 @@ var $renderer = (function() {
 					return this.error(500, err);
 				}
 			} else {
-				return this.error(404, "Cannot find resolver [" + $appEnv.view.resolver + "]");
+				return this.error(404, "Cannot find resolver [" + $webapp.view.resolver + "]");
 			}
 		}
 	};
@@ -205,7 +205,7 @@ var _kj_dispatch_and_run_ = (function() {
 
 	var fun = function(request, response) {
 		var ctxUri = getCtxUri(request);
-		if ($appEnv.res.matches(ctxUri)) {
+		if ($webapp.res.matches(ctxUri)) {
 			// static files
 			try {
 				var resPath = request.getServletContext().getRealPath(ctxUri);
@@ -235,19 +235,19 @@ var _kj_dispatch_and_run_ = (function() {
 		ctx.setBindings(__kj_nashorn_engine__.createBindings(), JavaScriptContext.ENGINE_SCOPE);
 		var requestContext = {};
 		ctx.setAttribute("$context", requestContext, JavaScriptContext.ENGINE_SCOPE);
-		ctx.setAttribute("$appEnv", $appEnv, JavaScriptContext.ENGINE_SCOPE);
+		ctx.setAttribute("$webapp", $webapp, JavaScriptContext.ENGINE_SCOPE);
 		ctx.setAttribute("$classpath", $classpath, JavaScriptContext.ENGINE_SCOPE);
 		ctx.setAttribute("$servletContextRoot", $servletContextRoot, JavaScriptContext.ENGINE_SCOPE);
 		ctx.setAttribute("__kj_nashorn_engine__", __kj_nashorn_engine__, JavaScriptContext.ENGINE_SCOPE);
 		ctx.setAttribute("__kj_nashorn_inner_reader__", __kj_nashorn_inner_reader__, JavaScriptContext.ENGINE_SCOPE);
 		ctx.setAttribute("__kj_nashorn_req_ctx__", ctx, JavaScriptContext.ENGINE_SCOPE);
 		var root;
-		if ($appEnv.fileHome.startsWith("classpath:")) {
+		if ($webapp.fileHome.startsWith("classpath:")) {
 			// class path
-			root = $appEnv.fileHome.replace("classpath:", $classpath);
+			root = $webapp.fileHome.replace("classpath:", $classpath);
 		} else {
 			// relative path
-			root = $servletContextRoot + $appEnv.fileHome;
+			root = $servletContextRoot + $webapp.fileHome;
 		}
 		root = root.replaceAll("//", "/");
 		ctx.setAttribute("__kj_nashorn_controller_root__", root, JavaScriptContext.ENGINE_SCOPE);
@@ -258,7 +258,7 @@ var _kj_dispatch_and_run_ = (function() {
 		var filePath = req.controller.location;
 		if (filePath) {
 			try {
-				__kj_nashorn_engine__.eval(new JavaFileReader(new JavaFile(root + filePath + $appEnv.fileSuffix)), ctx);
+				__kj_nashorn_engine__.eval(new JavaFileReader(new JavaFile(root + filePath + $webapp.fileSuffix)), ctx);
 			} catch (err) {
 				res.sendError(500, err);
 				return;
@@ -288,9 +288,9 @@ var _kj_dispatch_and_run_ = (function() {
 		var aopBeforeFunctions = [];
 		var aopAfterFunctions = [];
 		var aopOnErrorFunctions = [];
-		if ($appEnv.interceptors) {
+		if ($webapp.interceptors) {
 			// AOP
-			var interceptors = _kj_util_.array.getArray($appEnv.interceptors);
+			var interceptors = _kj_util_.array.getArray($webapp.interceptors);
 
 			for (var i = 0; i < interceptors.length; i++) {
 				var interceptor = interceptors[i];
@@ -384,7 +384,7 @@ var _kj_dispatch_and_run_ = (function() {
 		var ctl = {};
 		var path = req.ctxUri;
 		// remove suffix
-		var suffix = $appEnv.controller.suffix;
+		var suffix = $webapp.controller.suffix;
 		if (suffix) {
 			if (!suffix.startsWith("."))
 				suffix = "." + suffix;
@@ -397,7 +397,7 @@ var _kj_dispatch_and_run_ = (function() {
 		var idx = path.indexOf("/$f:");
 		if (idx >= 0) {
 			ctl.func = req.pathValues["$f"];
-			ctl.location = formatLocation($appEnv.controller.pkg + path.substring(0, idx));
+			ctl.location = formatLocation($webapp.controller.pkg + path.substring(0, idx));
 			ctl.args = [];
 			var argsPath = path.substring(idx);
 			var nodes = argsPath.split("/");
@@ -416,13 +416,13 @@ var _kj_dispatch_and_run_ = (function() {
 					pathWithoutValues += "/" + node;
 				}
 			}
-			if ($appEnv._routedUrls_.indexOf(pathWithoutValues) >= 0) {
-				pathWithoutValues = $appEnv._routes_[pathWithoutValues];
+			if ($webapp._routedUrls_.indexOf(pathWithoutValues) >= 0) {
+				pathWithoutValues = $webapp._routes_[pathWithoutValues];
 			}
 
 			idx = pathWithoutValues.lastIndexOf("/");
 
-			ctl.location = formatLocation(_kj_util_.pkg.toPath($appEnv.controller.pkg) + pathWithoutValues.substring(0, idx));
+			ctl.location = formatLocation(_kj_util_.pkg.toPath($webapp.controller.pkg) + pathWithoutValues.substring(0, idx));
 			ctl.func = pathWithoutValues.substring(idx + 1);
 			ctl.args = [];
 		}
@@ -487,7 +487,7 @@ var _kj_dispatch_and_run_ = (function() {
 				}
 			}
 
-			response.setCharacterEncoding(this.encoding ? this.encoding : $appEnv.controller.encoding);
+			response.setCharacterEncoding(this.encoding ? this.encoding : $webapp.controller.encoding);
 			this.writeBytes(body.getBytes());
 		};
 		res.writeBytes = function(bytes) {
@@ -589,7 +589,7 @@ var _kj_dispatch_and_run_ = (function() {
 
 		// Parameters
 		if (!req.contentType || req.contentType.toLowerCase().startsWith("application/x-www-form-urlencoded")) {
-			request.setCharacterEncoding($appEnv.controller.encoding)
+			request.setCharacterEncoding($webapp.controller.encoding)
 		} else if (req.contentType.toLowerCase().startsWith("multipart/form-data")) {
 			var boundary = "--" + req.contentType.split("boundary=")[1];
 			var paramParts = req.readRequestBody().split(boundary);
@@ -669,7 +669,7 @@ var _kj_dispatch_and_run_ = (function() {
 
 		for ( var name in req.parameterValues) {
 			var values = req.parameterValues[name];
-			if ($appEnv.controller.parameterJSONFriendly === true) {
+			if ($webapp.controller.parameterJSONFriendly === true) {
 				for (var i = 0; i < values.length; i++) {
 					values[i] = tryToJSON(values[i]);
 				}
@@ -688,7 +688,7 @@ var _kj_dispatch_and_run_ = (function() {
 			var name = val.substring(0, index);
 			var value = val.substring(index + 1, val.length);
 			// json friendly
-			if ($appEnv.controller.parameterJSONFriendly === true) {
+			if ($webapp.controller.parameterJSONFriendly === true) {
 				value = tryToJSON(value);
 			}
 			// comma, break into array

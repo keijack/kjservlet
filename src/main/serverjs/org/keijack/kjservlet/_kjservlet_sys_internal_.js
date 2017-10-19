@@ -43,4 +43,4 @@ var imports = (function() {
 
 })();
 
-var $appEnv = {};
+var $webapp = {};
