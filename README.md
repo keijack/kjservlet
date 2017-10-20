@@ -118,8 +118,8 @@ Nashorn provides a function load(path), but normally, we recommend you to use a 
 There are several reasons that you should use imports():
 
 * In one scope -- global.js runs on the global scope, and every request runs on its own scope --, no matter how many times you call the import function, it only import the same file once. It's more efficient when your scripts import some common function that you define in a common script file.
-* It's much easier to handle location, it use the relative path rather than absolute path. *Notice! In controller script files and the files imported by them, the relative root is the fileHome you define in `$appEvn`. While in global.js and the files it imports, `classpaht:` is the relative root.* 
-* in imports function, the path can use `.` to separate path just like the package path in Java. Both `org.keijack.kjservlet.service` and `org/keijack/kjservlet/service` are accepted. *Notice! In controller script files and the files imported by them, the suffix is the one you define in `$appEvn`. While in global.js and the files it imports, `.js` is only suffix that supported.*
+* It's much easier to handle location, it use the relative path rather than absolute path. *Notice! In controller script files and the files imported by them, the relative root is the fileHome you define in `$webapp`. While in global.js and the files it imports, `classpaht:` is the relative root.* 
+* in imports function, the path can use `.` to separate path just like the package path in Java. Both `org.keijack.kjservlet.service` and `org/keijack/kjservlet/service` are accepted. *Notice! In controller script files and the files imported by them, the suffix is the one you define in `$webapp`. While in global.js and the files it imports, `.js` is only suffix that supported.*
  
 
 ## Writing Controllers  
