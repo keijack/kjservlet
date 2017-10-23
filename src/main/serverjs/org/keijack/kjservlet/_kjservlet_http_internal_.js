@@ -416,6 +416,8 @@ var _kj_dispatch_and_run_ = (function() {
 					pathWithoutValues += "/" + node;
 				}
 			}
+			if (!pathWithoutValues)
+				pathWithoutValues = "/";
 			if ($webapp._routedUrls_.indexOf(pathWithoutValues) >= 0) {
 				pathWithoutValues = $webapp._routes_[pathWithoutValues];
 			}
