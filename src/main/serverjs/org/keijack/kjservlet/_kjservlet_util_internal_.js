@@ -106,6 +106,7 @@ _kj_util_.func.getAnnotations = function(func) {
 		return [];
 	var sourceCode = func.toString();
 	sourceCode = sourceCode.substring(sourceCode.indexOf('{') + 1).trim(); // remove function xxxx() {
+	sourceCode = trimComments(sourceCode);
 	if (sourceCode.startsWith('"use strict"') || sourceCode.startsWith("'use strict'")) { // remove "use strict";
 		sourceCode = sourceCode.substring('"use strict"'.length).trim();
 		if (sourceCode.startsWith(';'))
