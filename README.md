@@ -79,7 +79,7 @@ In the example above, if you defined an object like the following in your `demo.
 var person = {
     yieldName : function(req) {
         var name = req.parameters.name;
-        return $renderer.html("<!DOCTYPE html><html><head><title>Say Hello</title></head><body>My name is " + name + "!</body></html>");
+        return "<!DOCTYPE html><html><head><title>Say Hello</title></head><body>My name is " + name + "!</body></html>";
     }
 };
 ```
