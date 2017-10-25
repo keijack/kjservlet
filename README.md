@@ -38,7 +38,7 @@
 ```javascript
 function sayHello(req){
     var name=req.param["name"];
-    return $renderer.html("<!DOCTYPE html><html><head><title>Say Hello</title></head><body>Hello, " + name + "</body></html>");
+    return "<!DOCTYPE html><html><head><title>Say Hello</title></head><body>Hello, " + name + "</body></html>";
 }
 ``` 
 6, Start up the server, and use you browser to visit `http://[your_server_host]:[your_server_port]/[your_servlet_context]/demo/sayHello?name=World`, then you will see the "Hello World" in the browser.
