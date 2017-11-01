@@ -20,7 +20,8 @@ public class KJServlet extends HttpServlet {
 	super.init();
 	String debugParam = getInitParameter("debug");
 	debug = "true".equalsIgnoreCase(debugParam);
-	jservletRuntime = new KJServletRuntime(getServletContext());
+	jservletRuntime = KJServletRuntime.getInstance();
+	jservletRuntime.initHttp(getServletContext());
     }
 
     @Override
@@ -30,7 +31,9 @@ public class KJServlet extends HttpServlet {
 
     private KJServletRuntime getJservletRuntime() {
 	if (debug) {
-	    return new KJServletRuntime(getServletContext());
+	    KJServletRuntime runtime = KJServletRuntime.newInstance();
+	    runtime.initHttp(getServletContext());
+	    return runtime;
 	} else {
 	    return jservletRuntime;
 	}

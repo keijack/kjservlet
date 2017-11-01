@@ -17,6 +17,23 @@ import javax.servlet.http.HttpServletResponse;
 
 public final class KJServletRuntime {
 
+    private static volatile KJServletRuntime instance;
+
+    public static KJServletRuntime newInstance() {
+	return new KJServletRuntime();
+    }
+
+    public static KJServletRuntime getInstance() {
+	if (instance == null) {
+	    synchronized (KJServletRuntime.class) {
+		if (instance == null) {
+		    instance = newInstance();
+		}
+	    }
+	}
+	return instance;
+    }
+
     public class InnerJsReader {
 
 	private volatile Map<String, String> scriptCache = new HashMap<>();
@@ -45,16 +62,10 @@ public final class KJServletRuntime {
 
     private final ScriptEngine engine;
 
-    public KJServletRuntime(ServletContext ctx) {
+    private KJServletRuntime() {
 	try {
 	    engine = new ScriptEngineManager().getEngineByName("js");
 	    engine.put("__kj_nashorn_engine__", engine);
-
-	    String ctxRoot = ctx.getRealPath("/");
-	    if (!ctxRoot.endsWith(File.separator)) {
-		ctxRoot += File.separator;
-	    }
-	    engine.put("$servletContextRoot", ctxRoot);
 
 	    String classPath = this.getClass().getClassLoader().getResource("").getPath().toString();
 	    engine.put("$classpath", classPath);
@@ -67,10 +78,23 @@ public final class KJServletRuntime {
 	    engine.eval(reader.read("_kjservlet_sys_internal_.js"));
 	    engine.eval(reader.read("_kjservlet_log_internal_.js"));
 	    // global configuration
-	    File globalConf = new File(classPath + "/global.js");
-	    if (globalConf.exists())
-		engine.eval(new FileReader(globalConf));
+	    File globalJs = new File(classPath + "/global.js");
+	    if (globalJs.exists())
+		engine.eval(new FileReader(globalJs));
 
+	} catch (Exception e) {
+	    throw new NashornJSException(e);
+	}
+    }
+
+    public void initHttp(ServletContext ctx) {
+	try {
+	    String ctxRoot = ctx.getRealPath("/");
+	    if (!ctxRoot.endsWith(File.separator)) {
+		ctxRoot += File.separator;
+	    }
+	    engine.put("$servletContextRoot", ctxRoot);
+	    InnerJsReader reader = (InnerJsReader) engine.get("__kj_nashorn_inner_reader__");
 	    engine.eval(reader.read("_kjservlet_http_internal_.js"));
 	} catch (Exception e) {
 	    throw new NashornJSException(e);
