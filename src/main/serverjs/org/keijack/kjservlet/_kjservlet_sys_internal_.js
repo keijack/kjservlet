@@ -45,7 +45,9 @@ var imports = (function() {
 
 var $webapp = {};
 
-var $theadSafeZone = (function() {
+var $websocket = {};
+
+var $threadSafeZone = (function() {
 	var ThreadSafeZone = Java.type("org.keijack.kjservlet.ThreadSafeZone");
 	return new ThreadSafeZone;
 })();

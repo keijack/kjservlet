@@ -10,10 +10,6 @@ import java.util.Map;
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 public final class KJServletRuntime {
 
@@ -44,7 +40,7 @@ public final class KJServletRuntime {
 		    if (!scriptCache.containsKey(path)) {
 			try (InputStreamReader in = new InputStreamReader(this.getClass().getResourceAsStream(path))) {
 			    StringWriter out = new StringWriter();
-			    char[] buff = new char[1024];
+			    char[] buff = new char[100 * 1024];
 			    int byteRead = 0;
 			    while ((byteRead = in.read(buff)) > 0) {
 				out.write(buff, 0, byteRead);
@@ -62,6 +58,8 @@ public final class KJServletRuntime {
 
     private final ScriptEngine engine;
 
+    private final InnerJsReader reader;
+
     private KJServletRuntime() {
 	try {
 	    engine = new ScriptEngineManager().getEngineByName("js");
@@ -71,7 +69,8 @@ public final class KJServletRuntime {
 	    engine.put("$classpath", classPath);
 
 	    // System
-	    InnerJsReader reader = new InnerJsReader();
+
+	    reader = new InnerJsReader();
 	    engine.put("__kj_nashorn_inner_reader__", reader);
 
 	    engine.eval(reader.read("_kjservlet_util_internal_.js"));
@@ -87,25 +86,28 @@ public final class KJServletRuntime {
 	}
     }
 
-    public void initHttp(ServletContext ctx) {
+    public void loadInnerScript(String innerScriptName) {
 	try {
-	    String ctxRoot = ctx.getRealPath("/");
-	    if (!ctxRoot.endsWith(File.separator)) {
-		ctxRoot += File.separator;
-	    }
-	    engine.put("$servletContextRoot", ctxRoot);
-	    InnerJsReader reader = (InnerJsReader) engine.get("__kj_nashorn_inner_reader__");
-	    engine.eval(reader.read("_kjservlet_http_internal_.js"));
+	    engine.eval(reader.read(innerScriptName));
 	} catch (Exception e) {
 	    throw new NashornJSException(e);
 	}
     }
 
-    public void doRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException {
+    public Object invokeFunction(String function, Object... args) {
 	try {
-	    ((Invocable) engine).invokeFunction("_kj_dispatch_and_run_", request, response);
+	    return ((Invocable) engine).invokeFunction(function, args);
 	} catch (Exception e) {
-	    throw new ServletException(e);
+	    throw new NashornJSException(e);
+	}
+    }
+
+    public Object invokeMethod(String object, String method, Object... args) {
+	try {
+	    Object obj = engine.get(object);
+	    return ((Invocable) engine).invokeMethod(obj, method, args);
+	} catch (Exception e) {
+	    throw new NashornJSException(e);
 	}
     }
 

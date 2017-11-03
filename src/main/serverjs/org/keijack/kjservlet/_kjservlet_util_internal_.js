@@ -2,7 +2,7 @@ var _kj_util_ = {
 	json : {},
 	func : {},
 	array : {},
-	pkg : {},
+	path : {},
 }
 
 /**
@@ -145,9 +145,13 @@ _kj_util_.array.containOne = function(array, elements) {
 	return false;
 };
 
-_kj_util_.pkg.toPath = function(pkg) {
+_kj_util_.path.pkgToPath = function(pkg) {
 	return pkg.replaceAll(".", "/");
 }
+
+_kj_util_.path.formatPath = function(path) {
+	return path.replaceAll("//", "/");
+};
 
 /**
  * hash

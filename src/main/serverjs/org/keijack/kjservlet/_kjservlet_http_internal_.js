@@ -77,6 +77,15 @@
 
 })();
 
+var _kj_servlet_init_ = function(ctx) {
+	var JavaFile = Java.type("java.io.File");
+	var ctxRoot = ctx.getRealPath("/");
+	if (!ctxRoot.endsWith(JavaFile.separator)) {
+		ctxRoot += JavaFile.separator;
+	}
+	__kj_nashorn_engine__.put("$servletContextRoot", ctxRoot);
+};
+
 var $renderer = (function() {
 	return {
 		render : function(contentType, content, headers) {
@@ -182,7 +191,7 @@ var $renderer = (function() {
 	};
 })();
 
-var _kj_dispatch_and_run_ = (function() {
+var _kj_servlet_dispatch_and_run_ = (function() {
 
 	"use strict";
 
@@ -247,7 +256,7 @@ var _kj_dispatch_and_run_ = (function() {
 			root = $webapp.fileHome.replace("classpath:", $classpath);
 		} else {
 			// relative path
-			root = $servletContextRoot + $webapp.fileHome;
+			root = $classpath + "/" + $webapp.fileHome;
 		}
 		root = root.replaceAll("//", "/");
 		ctx.setAttribute("__kj_nashorn_controller_root__", root, JavaScriptContext.ENGINE_SCOPE);
@@ -424,7 +433,7 @@ var _kj_dispatch_and_run_ = (function() {
 
 			idx = pathWithoutValues.lastIndexOf("/");
 
-			ctl.location = formatLocation(_kj_util_.pkg.toPath($webapp.controller.pkg) + pathWithoutValues.substring(0, idx));
+			ctl.location = _kj_util_.path.formatPath(_kj_util_.path.pkgToPath($webapp.controller.pkg) + pathWithoutValues.substring(0, idx));
 			ctl.func = pathWithoutValues.substring(idx + 1);
 			ctl.args = [];
 		}
