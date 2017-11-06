@@ -9,6 +9,7 @@
 			<id>keijack</id>
 			<name>Keijack</name>
 			<email>keijack.wu@gmail.com</email>
+			<url>http://www.keijack.org</url>
 		</developer>
 	</developers>
 	<build>
@@ -27,8 +28,8 @@
 	<dependencies>
 		<dependency>
 			<groupId>javax.servlet</groupId>
-			<artifactId>javax.servlet-api</artifactId>
-			<version>3.1.0</version>
+			<artifactId>servlet-api</artifactId>
+			<version>2.2</version>
 			<scope>compile</scope>
 			<optional>true</optional>
 		</dependency>

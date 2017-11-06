@@ -12,7 +12,8 @@ public class KJServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
     /**
-     * @deprecated This is the field that I use to test the global.js
+     * @deprecated This is the field that I use to test the global.js, please don't use.
+     * 
      */
     private boolean debug = false;
 

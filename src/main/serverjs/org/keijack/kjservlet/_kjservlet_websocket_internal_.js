@@ -156,18 +156,18 @@ var _kj_websocket_dispatcher_ = (function() {
 		session.uri = session.requestURI = session.oriSession.getRequestURI().toString();
 
 		session.pathValues = session.pathValue = session.pathVals = session.pathVal = session.pathParameters = session.pathParams = session.pathParam = {};
-		var pvkeys = session.oriSession.getPathParameters().keySet().toArray();
-		for (var i = 0; i < pvkeys.length; i++) {
-			var key = pvkeys[i];
+		var pvkeys = session.oriSession.getPathParameters().keySet().iterator();
+		while (pvkeys.hasNext()) {
+			var key = pvkeys.next();
 			var val = session.oriSession.getPathParameters().get(key);
 			session.pathValues[key] = val;
 		}
 
 		session.paramValues = session.paramVals = session.parameterValues = session.requestParameterMap = {};
 		var paramMap = session.oriSession.getRequestParameterMap();
-		var paramKeys = paramMap.keySet().toArray();
-		for (var i = 0; i < paramKeys.length; i++) {
-			var key = paramKeys[i];
+		var paramKeys = paramMap.keySet().iterator();
+		while (paramKeys.hasNext()) {
+			var key = paramKeys.next();
 			var vals = paramMap.get(key);
 			session.requestParameterMap[key] = [];
 			for (var idx = 0; idx < vals.length; idx++) {
