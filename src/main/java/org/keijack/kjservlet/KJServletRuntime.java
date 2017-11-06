@@ -78,7 +78,7 @@ public final class KJServletRuntime {
 	    engine.eval(reader.read("_kjservlet_log_internal_.js"));
 	    // global configuration
 	    File globalJs = new File(classPath + "/global.js");
-	    if (globalJs.exists())
+	    if (globalJs.exists() && globalJs.isFile())
 		engine.eval(new FileReader(globalJs));
 
 	} catch (Exception e) {
