@@ -31,6 +31,21 @@ _kj_util_.json.extand = function(target, o1) {
 	return target;
 };
 
+_kj_util_.json.typeOf = function(object) {
+	if (typeof object === "object" && object["class"] && object["hashCode"] && typeof object["hashCode"] === "function"
+			&& Object.toString(object["hashCode"]) === "function Object() { [native code] }") {
+		// Java Object
+		return "javaObject";
+	} else if (typeof object === "object") {
+		if (Array.isArray(object)) {
+			return "jsarray";
+		} else {
+			return "json";
+		}
+	} else
+		return typeof object;
+};
+
 _kj_util_.json.toJava = function(object) {
 	if (typeof object === "object" && object["class"] && object["hashCode"] && typeof object["hashCode"] === "function"
 			&& Object.toString(object["hashCode"]) === "function Object() { [native code] }") {

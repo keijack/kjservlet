@@ -42,7 +42,7 @@ var _kj_websocket_init_ = (function() {
 			if (!path || typeof path != "string")
 				continue;
 			$websocket._endpointMapping_[endpoint] = getHandler(path);
-			$websocket._endpointMapping_[endpoint].handShake = endpoints[i].handShake;
+			$websocket._endpointMapping_[endpoint].onHandShake = endpoints[i].onHandShake;
 		}
 
 	}
@@ -81,19 +81,114 @@ var _kj_websocket_init_ = (function() {
 
 var _kj_websocket_dispatcher_ = (function() {
 
-	var sessionHandler = $threadSafeZone.allocate("_kj_websocket_session_handler_");
+	var sessionHandler = $MTSGlobal.allocate();
+
+	$websocket.sessions = $websocket.session = $MTSGlobal.allocate();
 
 	var JavaSimpleScriptContext = Java.type("javax.script.SimpleScriptContext");
 	var JavaScriptContext = Java.type("javax.script.ScriptContext");
 	var JavaFileReader = Java.type("java.io.FileReader");
 	var JavaFile = Java.type("java.io.File");
+	var JavaByteBuffer = Java.type("java.nio.ByteBuffer");
+	var JavaByteArray = Java.type("byte[]");
+
+	var wrapSession = function(ses) {
+		var session = {};
+		session.oriSession = ses;
+		session.id = session.sessionId = session.oriSession.getId();
+		session.getId = function() {
+			return this.id;
+		};
+		session.sendText = function(text, isLast) {
+			if (!text || typeof text != "string")
+				return;
+			if (isLast === true || isLast === false)
+				this.oriSession.getBasicRemote().sendText(text, isLast);
+			else {
+				try {
+					this.oriSession.getBasicRemote().sendText(text);
+				} catch (e) {
+					print(e);
+				}
+			}
+		};
+		session.sendPing = function(pingMsg) {
+			var msg = "";
+			if (pingMsg)
+				msg = pingMsg.toString();
+			this.oriSession.getBasicRemote().sendPing(JavaByteBuffer.wrap(msg.getBytes()));
+		};
+		session.sendPong = function(pongMsg) {
+			var msg = "";
+			if (pongMsg)
+				msg = pongMsg.toString();
+			this.oriSession.getBasicRemote().sendPong(JavaByteBuffer.wrap(msg.getBytes()));
+		};
+		session.sendBytes = function(bytes) {
+			if (!bytes || !JavaByteArray["class"].isInstance(data))
+				return;
+			this.oriSession.getBasicRemote().sendPong(JavaByteBuffer.wrap(bytes));
+		};
+		session.sendBinary = function(data) {
+			if (data && JavaByteBuffer["class"].isInstance(data))
+				this.oriSession.getBasicRemote().sendBinary(data);
+		};
+		session.sendJSON = session.sendJson = function(data) {
+			this.sendText(JSON.stringify(data));
+		}
+		session.sendJavaObject = function(data) {
+			this.oriSession.getBasicRemote().sendObject(data);
+		}
+		session.send = function(data) {
+			if (JavaByteArray["class"].isInstance(data)) {
+				this.sendBytes(data);
+			} else if (JavaByteBuffer["class"].isInstance(data)) {
+				this.sendBinary(data);
+			} else if (_kj_util_.json.typeOf(data) == "javaObject") {
+				this.sendJavaObject(data);
+			} else if (_kj_util_.json.typeOf(data) == "json" || _kj_util_.json.typeOf(data) == "jsarray") {
+				this.sendJSON(data);
+			} else {
+				this.sendText(data.toString());
+			}
+		};
+
+		session.uri = session.requestURI = session.oriSession.getRequestURI().toString();
+
+		session.pathValues = session.pathValue = session.pathVals = session.pathVal = session.pathParameters = session.pathParams = session.pathParam = {};
+		var pvkeys = session.oriSession.getPathParameters().keySet().toArray();
+		for (var i = 0; i < pvkeys.length; i++) {
+			var key = pvkeys[i];
+			var val = session.oriSession.getPathParameters().get(key);
+			session.pathValues[key] = val;
+		}
+
+		session.paramValues = session.paramVals = session.parameterValues = session.requestParameterMap = {};
+		var paramMap = session.oriSession.getRequestParameterMap();
+		var paramKeys = paramMap.keySet().toArray();
+		for (var i = 0; i < paramKeys.length; i++) {
+			var key = paramKeys[i];
+			var vals = paramMap.get(key);
+			session.requestParameterMap[key] = [];
+			for (var idx = 0; idx < vals.length; idx++) {
+				session.requestParameterMap[key][idx] = vals[idx];
+			}
+		}
+
+		session.params = session.param = session.parameters = session.parameter = {};
+		for ( var key in session.requestParameterMap) {
+			session.params[key] = session.requestParameterMap[key][0];
+		}
+
+		return session;
+	};
 
 	var dispatcher = {
 		onHandShake : function(config, request, response) {
 			var path = config.getPath();
 			var handler = $websocket._endpointMapping_[path];
-			if (handler.handShake && typeof handler.handShake == "function")
-				handler.handShake(config, request, response);
+			if (handler.onHandShake && typeof handler.onHandShake == "function")
+				handler.onHandShake(config, request, response);
 		},
 		onOpen : function(session, config) {
 			var path = config.getPath();
@@ -109,28 +204,36 @@ var _kj_websocket_dispatcher_ = (function() {
 			var handlerObject = __kj_nashorn_engine__.eval(handler.handler, ctx);
 			if (!handlerObject)
 				return;
-			sessionHandler.put("#" + session.getId(), handlerObject);
+			sessionHandler.put(session.getId(), handlerObject);
+
+			var wrappedSession = wrapSession(session);
+			$websocket.sessions.put(session.getId(), wrappedSession);
+
 			if (handlerObject.onOpen && typeof handlerObject.onOpen == "function") {
-				handlerObject.onOpen(session, config);
+				handlerObject.onOpen(wrappedSession, config);
 			}
 		},
 		onMessage : function(session, message) {
-			var handlerObject = sessionHandler.get("#" + session.getId())
+			var handlerObject = sessionHandler.get(session.getId());
+			var wrappedSession = $websocket.sessions.get(session.getId());
 			if (handlerObject.onMessage && typeof handlerObject.onMessage == "function") {
-				handlerObject.onMessage(session, message);
+				handlerObject.onMessage(wrappedSession, message);
 			}
 		},
 		onClose : function(session, closeReason) {
-			var handlerObject = sessionHandler.get("#" + session.getId())
+			var handlerObject = sessionHandler.get(session.getId());
+			var wrappedSession = $websocket.sessions.get(session.getId());
 			if (handlerObject.onClose && typeof handlerObject.onClose == "function") {
-				handlerObject.onClose(session, closeReason);
+				handlerObject.onClose(wrappedSession, closeReason);
 			}
-			sessionHandler.remove("#" + session.getId());
+			sessionHandler.remove(session.getId());
+			$websocket.sessions.remove(session.getId());
 		},
 		onError : function(session, thr) {
-			var handlerObject = sessionHandler.get("#" + session.getId())
+			var handlerObject = sessionHandler.get(session.getId())
+			var wrappedSession = $websocket.sessions.get(session.getId());
 			if (handlerObject.onError && typeof handlerObject.onError == "function") {
-				handlerObject.onError(session, thr);
+				handlerObject.onError(wrappedSession, thr);
 			}
 		}
 	};

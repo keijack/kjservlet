@@ -47,7 +47,7 @@ var $webapp = {};
 
 var $websocket = {};
 
-var $threadSafeZone = (function() {
-	var ThreadSafeZone = Java.type("org.keijack.kjservlet.ThreadSafeZone");
-	return new ThreadSafeZone;
+var $MTSGlobal = (function() {
+	var ThreadSafeZone = Java.type("org.keijack.kjservlet.MultiThreadSafeModel");
+	return new ThreadSafeZone("$MultiThreadSafeGlobal");
 })();
