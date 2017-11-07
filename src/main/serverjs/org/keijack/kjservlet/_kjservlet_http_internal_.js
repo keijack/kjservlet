@@ -1,10 +1,9 @@
 (function() {
 	var webappDefault = {
-		fileHome : "classpath:",
-		fileSuffix : ".js",
 		controller : {
+			fileHome : "classpath:",
+			fileExtension : ".js",
 			encoding : "utf8",
-			pkg : "",
 			suffix : "",
 			parameterJSONFriendly : true,
 		},
@@ -251,12 +250,12 @@ var _kj_servlet_dispatch_and_run_ = (function() {
 		ctx.setAttribute("__kj_nashorn_inner_reader__", __kj_nashorn_inner_reader__, JavaScriptContext.ENGINE_SCOPE);
 		ctx.setAttribute("__kj_nashorn_req_ctx__", ctx, JavaScriptContext.ENGINE_SCOPE);
 		var root;
-		if ($webapp.fileHome.startsWith("classpath:")) {
+		if ($webapp.controller.fileHome.startsWith("classpath:")) {
 			// class path
-			root = $webapp.fileHome.replace("classpath:", $classpath);
+			root = $webapp.controller.fileHome.replace("classpath:", $classpath);
 		} else {
-			// relative path
-			root = $classpath + "/" + $webapp.fileHome;
+			// absolute path
+			root = $webapp.controller.fileHome;
 		}
 		root = root.replaceAll("//", "/");
 		ctx.setAttribute("__kj_nashorn_controller_root__", root, JavaScriptContext.ENGINE_SCOPE);
@@ -267,7 +266,7 @@ var _kj_servlet_dispatch_and_run_ = (function() {
 		var filePath = req.controller.location;
 		if (filePath) {
 			try {
-				__kj_nashorn_engine__.eval(new JavaFileReader(new JavaFile(root + filePath + $webapp.fileSuffix)), ctx);
+				__kj_nashorn_engine__.eval(new JavaFileReader(new JavaFile(root + filePath + $webapp.controller.fileExtension)), ctx);
 			} catch (err) {
 				res.sendError(500, err);
 				return;
@@ -406,7 +405,7 @@ var _kj_servlet_dispatch_and_run_ = (function() {
 		var idx = path.indexOf("/$f:");
 		if (idx >= 0) {
 			ctl.func = req.pathValues["$f"];
-			ctl.location = formatLocation($webapp.controller.pkg + path.substring(0, idx));
+			ctl.location = formatLocation(path.substring(0, idx));
 			ctl.args = [];
 			var argsPath = path.substring(idx);
 			var nodes = argsPath.split("/");
@@ -433,7 +432,7 @@ var _kj_servlet_dispatch_and_run_ = (function() {
 
 			idx = pathWithoutValues.lastIndexOf("/");
 
-			ctl.location = _kj_util_.path.formatPath(_kj_util_.path.pkgToPath($webapp.controller.pkg) + pathWithoutValues.substring(0, idx));
+			ctl.location = _kj_util_.path.formatPath(pathWithoutValues.substring(0, idx));
 			ctl.func = pathWithoutValues.substring(idx + 1);
 			ctl.args = [];
 		}

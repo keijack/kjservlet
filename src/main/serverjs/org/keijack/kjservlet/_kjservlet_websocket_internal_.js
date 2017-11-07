@@ -1,8 +1,7 @@
 (function() {
 	var websocketDefault = {
 		fileHome : "classpath:",
-		fileSuffix : ".js",
-		pkg : ""
+		fileExtension : ".js",
 	};
 	_kj_util_.json.extand($websocket, websocketDefault);
 	if ($websocket.endpoint && !$websocket.endpoints) {
@@ -57,20 +56,23 @@ var _kj_websocket_init_ = (function() {
 			}
 		}
 
-		var ctl = {};
-
 		var idx = pathWithoutValues.lastIndexOf("/");
 
-		var location = _kj_util_.path.pkgToPath($websocket.pkg) + pathWithoutValues.substring(0, idx);
+		var location = pathWithoutValues.substring(0, idx);
 		var root;
 		if ($websocket.fileHome.startsWith("classpath:")) {
 			// class path
 			root = $websocket.fileHome.replace("classpath:", $classpath);
 		} else {
-			// relative path
-			root = $classpath + "/" + $websocket.fileHome;
+			// absolute path
+			root = $websocket.fileHome;
 		}
-		location = root + "/" + location + $websocket.fileSuffix;
+		root = root.replaceAll("//", "/");
+
+		location = root + "/" + location + $websocket.fileExtension;
+
+		var ctl = {};
+		ctl.root = root;
 		ctl.location = _kj_util_.path.formatPath(location);
 		ctl.handler = pathWithoutValues.substring(idx + 1);
 		return ctl;
@@ -196,6 +198,7 @@ var _kj_websocket_dispatcher_ = (function() {
 
 			var ctx = new JavaSimpleScriptContext();
 			ctx.setBindings(__kj_nashorn_engine__.createBindings(), JavaScriptContext.ENGINE_SCOPE);
+			ctx.setAttribute("__kj_nashorn_controller_root__", handler.root, JavaScriptContext.ENGINE_SCOPE);
 
 			__kj_nashorn_engine__.eval(__kj_nashorn_inner_reader__.read("_kjservlet_util_internal_.js"), ctx);
 			__kj_nashorn_engine__.eval(__kj_nashorn_inner_reader__.read("_kjservlet_ctx_internal_.js"), ctx);
