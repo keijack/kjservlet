@@ -3,7 +3,7 @@ KJServlet is lightweight javascript web framework which allows you to write seve
 
 It is also a very free style framework, it allows you to write your Javascript in many ways. Take writing controller for example, you can use functions, or you can use method in a Javascript object; you can write the response in a callback function, or you can just return a JSON object and let the framework do the rendering. 
 
-This document is a reference guide to KJServlet framework features. Because of this is a very new framework and written by one person (which is me), so there might be some bugs that I have not discovered. If you find some problems, or have any questions or suggestions, or you want to get involved in this project, please let me know, here is my email: keijack.wu#gmail.com (please change # to @)
+This document is a reference guide to KJServlet framework features. Because of this is a very new framework and written by one person (which is me), so there might be some bugs that I have not discovered. If you find some problems, or have any questions or suggestions, or you want to get involved in this project, please let me know, here is my email: keijack.wu@gmail.com 
 
 <b>*About the license: we provide two kinds of license, GNU by default. But if you want to use this framework in your business and don't want to open the source of your own system, please contact for a Apache license.*</b> 
  

@@ -39,7 +39,8 @@ var _kj_websocket_init_ = (function() {
 				path = path.handler;
 			}
 			if (!path || typeof path != "string")
-				continue;
+				path = endpoint;
+			
 			$websocket._endpointMapping_[endpoint] = getHandler(path);
 			$websocket._endpointMapping_[endpoint].onHandShake = endpoints[i].onHandShake;
 		}
@@ -156,7 +157,7 @@ var _kj_websocket_dispatcher_ = (function() {
 		};
 
 		session.uri = session.requestURI = session.oriSession.getRequestURI().toString();
-		
+
 		session.queryString = session.oriSession.getQueryString();
 
 		session.pathValues = session.pathValue = session.pathVals = session.pathVal = session.pathParameters = session.pathParams = session.pathParam = {};
