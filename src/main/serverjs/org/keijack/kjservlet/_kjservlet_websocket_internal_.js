@@ -156,6 +156,8 @@ var _kj_websocket_dispatcher_ = (function() {
 		};
 
 		session.uri = session.requestURI = session.oriSession.getRequestURI().toString();
+		
+		session.queryString = session.oriSession.getQueryString();
 
 		session.pathValues = session.pathValue = session.pathVals = session.pathVal = session.pathParameters = session.pathParams = session.pathParam = {};
 		var pvkeys = session.oriSession.getPathParameters().keySet().iterator();

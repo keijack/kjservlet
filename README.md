@@ -1,9 +1,11 @@
 # KJServlet - A Javascript web framework for Java
- KJServlet is lightweight javascript web framework which allows you to write sever side code using Javascript. It is based on Nashorn which is a script engine introduced in Java 8. In other words unlike Node.js which runs in V8 engine,  this framework runs on JVM environment. Which means that you can use all kinds of Java libs to construct you own web applications. 
+KJServlet is lightweight javascript web framework which allows you to write sever side code using Javascript. It is based on Nashorn which is a script engine introduced in Java 8. In other words unlike Node.js which runs in V8 engine,  this framework runs on JVM environment. Which means that you can use all kinds of Java libs to construct you own web applications. 
 
- It is also a very free style framework, it allows you to write your Javascript in many ways. Take writing controller for example, you can use functions, or you can use method in a Javascript object; you can write the response in a callback function, or you can just return a JSON object and let the framework do the rendering. 
+It is also a very free style framework, it allows you to write your Javascript in many ways. Take writing controller for example, you can use functions, or you can use method in a Javascript object; you can write the response in a callback function, or you can just return a JSON object and let the framework do the rendering. 
 
- This document is a reference guide to KJServlet framework features. Because of this is a very new framework and written by one person (which is me), so there might be some bugs that I have not discovered. If you find some problems, or have any questions or suggestions, or you want to get involved in this project, please let me know, here is my email: keijack.wu#gmail.com (please change # to @)
+This document is a reference guide to KJServlet framework features. Because of this is a very new framework and written by one person (which is me), so there might be some bugs that I have not discovered. If you find some problems, or have any questions or suggestions, or you want to get involved in this project, please let me know, here is my email: keijack.wu#gmail.com (please change # to @)
+
+<b>*About the license: we provide two kinds of license, GNU by default. But if you want to use this framework in your business and don't want to open the source of your own system, please contact for a Apache license.*</b> 
  
 ## Getting Start
  
@@ -54,13 +56,9 @@ Take the demo in the **Getting Start** for example, if you put the demo.js to a 
 In fact, you do have some ways to configure the route. A `global.js` in the classpath root folder will be run when the runtime environment is being prepared. In this file, you can redefined a global variable $webapp, which will affect the routing. 
 ```javascript
 $webapp = {
-    fileHome : "/WEB-INF/server-js/", // Where your js files are, default is "classpath:"
-    fileSuffix : ".js", // What suffix is your js file, default is "js"
     controller : {
-        pkg : "org.keijack.kjservlet.demo.controller", // The package of the js file, when routing,
-                                                       // you don't need to add  
-                                                       // /org/keijack/kjservlet/demo/controller/  
-                                                       // to you url. 
+        fileHome : "classpath:/org/keijack/kjservlet/demo/controller", // Where your js files are, default is "classpath:"
+        fileSuffix : ".js", // What suffix is your js file, default is ".js"
         suffix : "", // If your url have a suffix, like ".do", please set it here
     },
     resources : [ "*.html", "/images/*" ], // the url match these pattern will be treated as the static files
@@ -90,13 +88,9 @@ http://[your_server_host]:[your_server_port]/[your_servlet_context]/demo/person.
 You can add alias to routes, at your $webapp object, add a property named `alias`. for example:
 ```javascript
 $webapp = {
-    fileHome : "/WEB-INF/server-js/", // Where your js files are, default is "classpath:"
-    fileSuffix : ".js", // What suffix is your js file, default is "js"
     controller : {
-        pkg : "org.keijack.kjservlet.demo.controller", // The package of the js file, when routing,
-                                                       // you don't need to add  
-                                                       // /org/keijack/kjservlet/demo/controller/  
-                                                       // to you url. 
+        fileHome : "classpath:/org/keijack/kjservlet/demo/controller", // Where your js files are, default is "classpath:"
+        fileSuffix : ".js", // What suffix is your js file, default is ".js" 
         suffix : "", // If your url have a suffix, like ".do", please set it here
     },
     aliases : {
@@ -283,10 +277,9 @@ function dosth(req){
 The template engine is JSP by default, if you want to change it, please set it up in $webapp in your `global.js` file.
 ```javascript
 $webapp = {
-    fileHome : "...", 
-    fileSuffix : ".js",
     controller : {
-        pkg : "...", 
+        fileHome : "classpath:/org/keijack/kjservlet/demo/controller", // Where your js files are, default is "classpath:"
+        fileSuffix : ".js", // What suffix is your js file, default is ".js" 
         suffix : "", 
     },
     resources : [ "*.html", "/images/*" ],
@@ -388,10 +381,9 @@ Then in your template file,
 You can even customized your own resolver:
 ```javascript
 $webapp = {
-    fileHome : "...", 
-    fileSuffix : ".js",
     controller : {
-        pkg : "...", 
+        fileHome : "classpath:/org/keijack/kjservlet/demo/controller", // Where your js files are, default is "classpath:"
+        fileSuffix : ".js", // What suffix is your js file, default is ".js" 
         suffix : "", 
     },
     resources : [ "*.html", "/images/*" ],
@@ -430,10 +422,9 @@ So, the annotations of this controller function are ["@post", "@myOwnAnno"].
 Now, you know how to put annotations, but how to use it? Let go back to $webapp in the `global.js`;
 ```javascript
 $webapp = {
-    fileHome : "...", 
-    fileSuffix : ".js",
     controller : {
-        pkg : "...", 
+        fileHome : "classpath:/org/keijack/kjservlet/demo/controller", // Where your js files are, default is "classpath:"
+        fileSuffix : ".js", // What suffix is your js file, default is ".js" 
         suffix : "", 
     },
     resources : [ "*.html", "/images/*" ],
@@ -517,15 +508,98 @@ $event.off("eventName");
  **/
 $event.publish("eventName", data);
 ```
-*Notice! The $event works only in the request scope, that means if you cannot use $event object in `global.js` and the script files that imported to it.*
+*Notice! The $event works only in the request scope, that means if you cannot use $event object in `global.js` and the script files that imported to it. *
+
+## Websocket
+### Configuration
+To use websocket, add the object `$websocket` definition in your `global.xml`:
+```javascript
+$websocket = {
+    fileHome : "classpath:", // Where your handler js files are. 'classpath:' by default.
+    fileExtension : ".js", // The extension of your handler js files. default '.js' by default.
+    endpoints : [
+        {
+            endpoint : "/ws/echo/{pathValue0}/{pathValue1}", // The url that your client connect to the server. 
+            handler : "/ws/echo/echo.upper", // You handler js file path and object.  
+            onHandShake : function(conf, request, response) { // this method is optional
+            	// your codes here. The conf, request, response objects are Java objects. 
+            }
+        },
+        "/ws/chatRoom/checkin", // simple way, no onHanShake, the `endpoint` value and the `handler` value are the same.
+    ]
+}
+```
+In the example configuration above, your websocket handler javascript files will be stored in the java classpath, which may probably be `/WEB-INF/classes`, and with the extension `.js`. There are two endpoints registered, the first one, the websocket client will connect with the url `ws://[server-name]:[server-port]/[webapp-context]/ws/echo/pv0/pv1`, and the handler javascript file will has a name `echo.js` and be placed in the folder `classpath:/ws`. There is at least an object in this javascript, just like: 
+```javascript
+var echo = {
+	upper : {
+		onOpen : function(session, conf) {
+			// This method will be called when session opens
+		}, 
+		onMessage : function(session, message) {
+			// your codes
+		},
+		onClose : function(session, closeReason) {
+			// your codes
+		}, 
+		onError : function(session, throwable) {
+			// your codes
+		}
+	}
+}
+```
+### Handler Methods  
+Four methods will be called from there session start until the session ended. They are
+* **onOpen(session, conf)**, called when session opens. `session` is a wrapped json object, conf is a Java object, the same object that pass to the `onHandShake` method that configured in the `global.js`.
+* **onMessage(session, message)**, called when message are received, `session` is the same object that pass to the `onOpen` method. the `message` variable is the text message that the client send to the server.
+* **onClose(session, closeReason)**, called when the session closes, `session` is the same object that pass to the `onOpen` method. `closeReason` is the J2EE original CloseReason object.
+* **onError(session, throwable)**, called when exception occurs, `session` is the same object that pass to the `onOpen`method. `throwable` is the exception or error that throws by the business logic.
+
+All these four methods are optional, you can choose those you need. 
+
+### Fields and Methods in `session` Variable
+* **session.oriSession**, the original Java Session Object.
+* **session.id**, the id of this session.
+* **session.sessionId**, the alias of session.id.
+* **session.getId()**, the method that return the session.id.
+* **session.sendText(text, isLast)**, the method that send text to client, `isLast` is optional. if the `isLast` variable is passed, the session will only send all text when `isLast` == true.
+* **session.sendPing(pingMsg)**, send a ping message. 
+* **session.sendPong(pongMsg)**, send a pong message.
+* **session.sendBytes(bytes)**, send Java byte array, if the `bytes` variable is not a `byte[]` object, this method will not do anything.
+* **session.sendBinary(binary)**, send binary data, `binary` must be the Object of `java.nio.ByteBuffer`, or this method will not do anything.
+* **session.sendJSON(jsonObject)**, send a JSON object as a string. 
+* **session.sendJson(jsonObject)**, alias of `session.sendJSON(jsonObject)`.
+* **session.sendJavaObject(javaObject)**, send a Java Object.
+* **session.send(data)**, this method will find the suitable send method to send the message.
+* **session.uri**, the uri of this websocket.
+* **session.requestURI**, the alias of `session.uri`.
+* **session.pathValues**, the path values that configured in the endpoint. It is a JSON object, key is the words that configure in the endpoint and surrounded by the `{}`. And the value is the words that you pass in your connection. 
+* **session.pathValue**, the alias of `session.pathValues`.
+* **session.pathVals**, the alias of `session.pathValues`.
+* **session.pathVal**, the alias of `session.pathValues`.
+* **session.pathValue**, the alias of `session.pathValues`.
+* **session.queryString**, the query string from the connection url.
+* **session.pathParameters**, the alias of `session.pathValues`.
+* **session.pathParams**, the alias of `session.pathValues`.
+* **session.pathParam**, the alias of `session.pathValues`.
+* **session.parameterValues**, just like the Http request, it comes from the QueryString, the values of this object is always an array. 
+* **session.paramValues**, the alias of `session.parameterValues`.
+* **session.paramVals**, the alias of `session.parameterValues`.
+* **session.requestParameterMap**, the alias of `session.parameterValues`.
+* **session.parameters**, similar with `session.parameterValues`, but the value of this object always is a string. If there are more than one value with the same name in the query string, the first one is here.
+
+*You may save the session for a global use and send text in other threads, however, because that Nashorn is not multi-thread safe, please check the `Multi-Thread Safety` to find a solution* 
+
 
 ##  Global Scope And Request Scope
 
 There are two kinds of scopes in KJservlet. One is the global scope, which would be initialized after the servlet loaded. Some inner script and the most important global script -- `gloabl.js` -- would be run at this time. 
 
-The other scope is the request scope. When a request is come, the servlet will call dispatch method of the singleton KJServletRuntime. The dispatch method will compute the route, find the controller js, and then run it in a new scope.   
+The other scope is the request scope. When a request is come, the servlet will call dispatch method of the singleton KJServletRuntime. The dispatch method will compute the route, find the controller js, and then run it in a new scope.  
 
 Then, there is a little trick here. After the controller script loaded, the controller function itself will run in the global scope. So your controller functions have the ability to access the objects and functions in both scope. That means outside the controller function and the functions it calls, you cannot use the objects and functions that defined in `global.js`.
+
+While in the websocket connections, every session will all run in one scope, which will be started before `onOpen` callback, and ended after `onClose` callback.
 
 ### The `global.js` file
 The `global.js` is the file for you to affect the global scope, this file is located at the class path's root folder, and must have the name `global.js`.   You are allowed to import script files here, but unlike the controller script files, you have to put all of your global files under the class path and its sub-folder, and all your global files must use the ".js" suffix. 
@@ -736,3 +810,15 @@ You should also handle the dependency yourself, in your `pom.xml`, you should ad
         <version>1.2.17</version>
     </dependency>
 ```
+## Multi-Thread Safety
+Nashorn is not multi-thread safe, and for some complicated reason, it seems that Nashorn developer team will not add this feature in a short time.
+ 
+*Please check this https://blogs.oracle.com/nashorn/nashorn-multithreading-and-mt-safety*
+ 
+But KJServlet is run in a J2EE web container, it will start new threads when request coming. Follow the suggestion in the above article, we create new context for every request, that makes the KJServlet multi-thread safe. 
+
+However, sometimes we have to share your own data, how should we do than. For this purpose, we provide a global `$MTSGlobal` object. It is a sub-class of Java ConcurrentHashMap object, which is a multi-thread safe implementation of the Map interface. If you really want to share data via threads, define your sharing model in your `global.js`
+```javascript
+var mySharingData = $MTSGlobal.allocate();
+``` 
+Then use `put(key, value)`, `get(key)`, `remove(key)` methods to handle your sharing data.  
