@@ -1,7 +1,7 @@
 /*
    _kjservlet_sys_internal_.js
 
-   Copyright 2013 Keijack
+   Copyright 2017 Keijack
 
    This Source Code Form is subject to the terms of the GPL v.3.0. or Apache License v.2.0 (Need permission)  
    
