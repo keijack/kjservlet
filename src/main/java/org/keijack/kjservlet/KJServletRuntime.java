@@ -9,7 +9,7 @@
    
    GPL: https://www.gnu.org/licenses/gpl.html
    
-   Apache License: http://www.apache.org/licenses/
+   Apache License: http://www.apache.org/licenses/LICENSE-2.0
 */
 
 package org.keijack.kjservlet;
