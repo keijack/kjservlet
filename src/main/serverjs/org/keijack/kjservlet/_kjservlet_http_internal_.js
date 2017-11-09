@@ -10,7 +10,7 @@
    GPL: https://www.gnu.org/licenses/gpl.html
    
    Apache License: http://www.apache.org/licenses/LICENSE-2.0
-*/
+ */
 
 (function() {
 	var webappDefault = {
@@ -488,7 +488,10 @@ var _kj_servlet_dispatch_and_run_ = (function() {
 		};
 		res.write = function(data) {
 			var body = "";
-			if (typeof data === "object") {
+			if (JavaByteArray["class"].isInstance(data)) {
+				this.write(data);
+				return;
+			} else if (typeof data === "object") {
 				body = JSON.stringify(data);
 				if (!this.contentType)
 					this.contentType = "applcation/json";
