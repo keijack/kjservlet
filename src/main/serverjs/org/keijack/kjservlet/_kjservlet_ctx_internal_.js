@@ -37,7 +37,7 @@ var imports = (function() {
 			while (path.indexOf(".") >= 0) {
 				path = path.replace(".", "/");
 			}
-			path = path + $webapp.fileSuffix;
+			path = path + $webapp.controller.fileExtension;
 			if (path.startsWith("classpath:", $classpath)) {
 				path = path.replace("classpath:", $classpath)
 			} else {
