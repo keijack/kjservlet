@@ -78,7 +78,7 @@ var $event = (function() {
 			return {
 				"key" : listenerKey,
 				"off" : function() {
-					_super.off(this.key);
+					_super.remove(this);
 				}
 			};
 		},
