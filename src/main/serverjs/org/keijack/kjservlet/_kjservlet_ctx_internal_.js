@@ -87,7 +87,7 @@ var $event = (function() {
 			if (!listenerKeys)
 				return;
 			for (var keyIdx = 0; keyIdx < listenerKeys.length; keyIdx++) {
-				delete callbacks[key];
+				delete callbacks[keyIdx];
 			}
 			delete eventListeners[evtName];
 		},
