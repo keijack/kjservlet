@@ -12,10 +12,10 @@
    Apache License: http://www.apache.org/licenses/LICENSE-2.0
 */
 
-var imports = (function() {
+var imports = (function () {
 	var imported = [];
 
-	var fun = function(filePath) {
+	var fun = function (filePath) {
 
 		if (imported.indexOf(filePath) < 0) {
 			imported.push(filePath);
@@ -28,6 +28,9 @@ var imports = (function() {
 			var path = filePath;
 			if (path === "$db") {
 				__kj_nashorn_engine__.eval(__kj_nashorn_inner_reader__.read("_kjservlet_db_plugin_.js"));
+				return;
+			} else if (path === "$validator") {
+				__kj_nashorn_engine__.eval(__kj_nashorn_inner_reader__.read("_kjservlet_validator_plugin_.js"));
 				return;
 			} else if (path.startsWith("kjinner:")) {
 				path = path.replace("kjinner:", "");
@@ -58,7 +61,7 @@ var $webapp = {};
 
 var $websocket = {};
 
-var $MTSGlobal = (function() {
+var $MTSGlobal = (function () {
 	var ThreadSafeZone = Java.type("org.keijack.kjservlet.MultiThreadSafeModel");
 	return new ThreadSafeZone("$MultiThreadSafeGlobal");
 })();
