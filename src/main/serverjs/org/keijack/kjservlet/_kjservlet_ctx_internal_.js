@@ -28,7 +28,11 @@ var imports = (function() {
 			if (path === "$db") {
 				__kj_nashorn_engine__.eval(__kj_nashorn_inner_reader__.read("_kjservlet_db_plugin_.js"), __kj_nashorn_req_ctx__);
 				return;
-			} else if (path.startsWith("kjinner:")) {
+			} else if (path === "$validator") {
+				__kj_nashorn_engine__.eval(__kj_nashorn_inner_reader__.read("_kjservlet_validator_plugin_.js"), __kj_nashorn_req_ctx__);
+				return;
+			}
+			else if (path.startsWith("kjinner:")) {
 				path = path.replace("kjinner:", "");
 				__kj_nashorn_engine__.eval(__kj_nashorn_inner_reader__.read(path + ".js"), __kj_nashorn_req_ctx__);
 				return;
