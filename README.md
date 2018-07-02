@@ -188,7 +188,7 @@ The completed fields and functions of the request and response objects are bello
 * **req.pathValue**, an alias of `req.pathValues`.
 * **req.setAttribute(name, val)**, the wrap of the original request's setAttribute(name, value) method.
 * **req.setAttr(name, val)**, an alias of `req.setAttribute(name, val)`;
-* **req.getAttribute(name, defaultValue)**, the wrap of the original request's getAttribute(name) method, if there are no value then return the defaultValue that given.
+* **req.getAttribute(name, defaultValue)**, the wrap of the original request's getAttribute(name) method, if there is no value then return the defaultValue that given.
 * **req.getAttr(name, defaultValue)**, an alias of `req.getAttribute(name, defaultValue)`.
 * **req.removeAttribute(name)**, the wrap of the original request's removeAttribute(name) method.
 * **req.removeAttr(name)**, an alias of `req.removeAttribute(name)`.
@@ -401,7 +401,7 @@ $webapp = {
 }
 ```
 ## Annotations and AOP
-Unlike Java, there are no build-in annotation support in Javascript, and because of that you can defined your object any time, any where, it's pretty hard to intercept into the logic in runtime. However, we play a little trick for that. 
+Unlike Java, Javascript has no build-in annotations, and it's pretty hard to intercept into the logic in runtime while in Javascript you can defined your object any time and any where. However, we play a little trick for that. 
   
 If you are familiar with Javascript, you must have heard of the **strict mode**. If you want to run a function in a strict mode, you just need to add a line "use strict" to first line of the function body. Our annotations just like that. 
 ```javascript
@@ -810,6 +810,129 @@ You should also handle the dependency yourself, in your `pom.xml`, you should ad
         <version>1.2.17</version>
     </dependency>
 ```
+### The `$validator` Object
+This object is provided to make validating object more easier. Please check the code bellow:
+```javascript
+var obj = { "name": "keijack", "password": "kj$servlet0.10", "password2": "123456789", "age": "13", "savage": "10000", "code": "1234" };
+var rules = {
+    "name": [
+        {
+            "rule": "required"
+        }, {
+            "rule": "length",
+            "min": 3,
+            "max": 20,
+            "message": "The length of Name must be between {min} and {max}"
+        }, {
+            "rule": "regex",
+            "pattern": "/^[a-zA-Z]*$/",
+            "message": "Only a-z and A-Z are accepted"
+        }, {
+            "rule": function (val) {
+                var user = loadUserByName(val);
+                return user != null;
+            },
+            "message": "Someone has use this word, please choose other one for a name."
+        }
+    ],
+    "passwrod": [
+        {
+            "rule": "required"
+        }, {
+            "rule": "length",
+            "min": 6,
+            "max": 20,
+            "message": "The length of Password must be between {min} and {max}"
+        }],
+    "password2": [
+        {
+            "rule": "equalsTo",
+            "target": "password"
+        }
+    ],
+    "age": [
+        {
+            "rule": "number",
+            "min": 18,
+            "max": 60,
+            "message": "Your age must be between {min} and {max}. "
+        }
+    ],
+    "savage": [
+        {
+            "rule": "number"
+        }
+    ],
+    "code": [
+        {
+            "rule": "required"
+        }
+    ]
+};
+var result = $validator.hasError(obj, rules);
+```
+The `obj` above is the object that need to be validated, and `rules` is the configuration object which contains all fields to validate and each field has a array of the rules. There are several rules are inner supported, they are 
+* `required`, the object must has this field, and the value of this field should not be null. you can also use `notNull` to name this rule. 
+* `length`, if this field is not null (if you want this field required, please use `required`rule to specify), the length of this field should be between the `min` and the `max` that you offer in this rule. 
+* `number`, this field must be a number, you can specify the `min` and `max` to handle the range of this field.
+* `equalTo`, you can specify a `target` which value must be the same of this field.
+* `regex`, this field must match a regular expression which you should specify in `pattern` property. 
+* A function, which will accept the value as the parameter, if you return true, that means this value is valid, and false means unvalid. if you return false.
+In very rule, you can specify your own `message` property, when the field is not valid by the rule, this message will add to the result. In fact the result will look like:
+```javascript
+{
+    name: ["This field is required", "he length of Name must be between 3 and 20"]
+}
+```
+Of course, if there is nothing wrong with the object being validate, result will be `false`.
+
+You can also simplify the rules object, when only one property is needed, you can just use that property as the value but not the rule format object, just like: 
+```javascript
+var rules = {
+    "name": [
+        "required",
+        {
+            "rule": "length",
+            "min": 3,
+            "max": 20,
+            "message": "The length of Name must be between {min} and {max}"
+        },
+        /^[a-zA-Z]*$/,
+        function (val) {
+            var user = loadUserByName(val);
+            return user != null;
+        }
+    ],
+    "passwrod": [
+        "required",
+        {
+            "rule": "length",
+            "min": 6,
+            "max": 20,
+            "message": "The length of Password must be between {min} and {max}"
+        }
+    ],
+    "password2": {
+        "rule": "equalsTo",
+        "target": "password"
+    },
+    "age":
+    {
+        "rule": "number",
+        "min": 18,
+        "max": 60,
+        "message": "Your age must be between {min} and {max}. "
+    },
+    "savage": "number", // the same as `"savage": { "rule": "number"}`
+    "code": "required"
+};
+```
+Beside, a callback code style is provided:
+```javascript
+$validator.validate(obj, rules, function(result){
+    // handle error here, the result is the same as the hasError() method.
+});
+```
 ## Multi-Thread Safety
 Nashorn is not multi-thread safe, and for some complicated reason, it seems that Nashorn developer team will not add this feature in a short time.
  
@@ -817,7 +940,7 @@ Nashorn is not multi-thread safe, and for some complicated reason, it seems that
  
 But KJServlet is run in a J2EE web container, it will start new threads when request coming. Follow the suggestion in the above article, we create new context for every request, that makes the KJServlet multi-thread safe. 
 
-However, sometimes we have to share your own data, how should we do than. For this purpose, we provide a global `$MTSGlobal` object. It is a sub-class of Java ConcurrentHashMap object, which is a multi-thread safe implementation of the Map interface. If you really want to share data via threads, define your sharing model in your `global.js`
+However, sometimes we have to share our own data, so we provide a global `$MTSGlobal` object. It is a sub-class of Java ConcurrentHashMap object, which is a multi-thread safe implementation of the Map interface. If you really want to share data via threads, define your sharing model in your `global.js`
 ```javascript
 var mySharingData = $MTSGlobal.allocate();
 ``` 

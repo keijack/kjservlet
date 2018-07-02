@@ -814,6 +814,129 @@ log4j 日志对象的接口和默认的日志对象一致。但是，$log.level 
         <version>1.2.17</version>
     </dependency>
 ```
+### `$validator` 校验对象
+这个对象主要提供了简单的校验功能，通过该对象，你可以减少许多`if`语句的编写，请参考：
+```javascript
+var obj = { "name": "keijack", "password": "kj$servlet0.10", "password2": "123456789", "age": "13", "savage": "10000", "code": "1234" };
+var rules = {
+    "name": [
+        {
+            "rule": "required"
+        }, {
+            "rule": "length",
+            "min": 3,
+            "max": 20,
+            "message": "名字的长度必须介于{min}和{max}之间。"
+        }, {
+            "rule": "regex",
+            "pattern": "/^[a-zA-Z]*$/",
+            "message": "请输入英文字母。"
+        }, {
+            "rule": function (val) {
+                var user = loadUserByName(val);
+                return user != null;
+            },
+            "message": "该名字已经被注册，请选择一个新的名字。"
+        }
+    ],
+    "passwrod": [
+        {
+            "rule": "required"
+        }, {
+            "rule": "length",
+            "min": 6,
+            "max": 20,
+            "message": "密码的长度必须介于{min}和{max}之间。"
+        }],
+    "password2": [
+        {
+            "rule": "equalsTo",
+            "target": "password"
+        }
+    ],
+    "age": [
+        {
+            "rule": "number",
+            "min": 18,
+            "max": 60,
+            "message": "年龄必须介于{min}与{max}之间。"
+        }
+    ],
+    "savage": [
+        {
+            "rule": "number"
+        }
+    ],
+    "code": [
+        {
+            "rule": "required"
+        }
+    ]
+};
+var result = $validator.hasError(obj, rules);
+```
+上面例子中的`obj`对象是需要检查的对象，而`rules`则是检查的规则。`$validator`内置了以下规则：
+* `required`, 当前检查的这个字段必须不能为空，你还可以使用`notNull`来配置。
+* `length`, 当当前字段不为空时（请用`required`来判空），如果长度不在指定的`min`和`max`之间则为错。
+* `number`, 该字段必须是一个数字，你也可以通过`min`和`max`来指定该字段的大小范围。
+* `equalTo`, 必须和一个`target`指定的字段值一致。
+* `regex`, 这个字段必须符合指定在`pattern`中的正则表达式。
+* 一个函数，该函数会接收一个参数，该参数是对应字段的值，你可以自己编写逻辑来判定该值是否合法。如果合法请返回`true`，否则请返回`false`。
+在每种规则配置中，你可以配置一个`message`的属性，如果验证错误，这些消息会存入一个列表中，最后通过返回值返回，返回的内容大概如下:
+```javascript
+{
+    name: ["必须填写名字", "名字的长度必须处于3和20之间"]
+}
+```
+如果没有错误的情况下，方法会返回`false`。
+
+你可以简化相关的配置，当你的规则不需要自定义消息，并且只有一个字段的情况下，可以直接将当前的类型变为字符串放在属性里，请参考：
+```javascript
+var rules = {
+    "name": [
+        "required",
+        {
+            "rule": "length",
+            "min": 3,
+            "max": 20,
+            "message": "The length of Name must be between {min} and {max}"
+        },
+        /^[a-zA-Z]*$/,
+        function (val) {
+            var user = loadUserByName(val);
+            return user != null;
+        }
+    ],
+    "passwrod": [
+        "required",
+        {
+            "rule": "length",
+            "min": 6,
+            "max": 20,
+            "message": "The length of Password must be between {min} and {max}"
+        }
+    ],
+    "password2": {
+        "rule": "equalsTo",
+        "target": "password"
+    },
+    "age":
+    {
+        "rule": "number",
+        "min": 18,
+        "max": 60,
+        "message": "Your age must be between {min} and {max}. "
+    },
+    "savage": "number", // the same as `"savage": { "rule": "number"}`
+    "code": "required"
+};
+```
+另外，该对象还提供了一种回调方式的代码编写风格：
+```javascript
+$validator.validate(obj, rules, function(result){
+    // 处理错误，result对象和 hasError() 方法返回的一致。
+});
+```
 ## 多线程安全
 Nashorn 并不是多线程安全的，似乎多线程安全实现起来相当的复杂，所以似乎在短期之内，开发团队都不会支持多线程安全。
  

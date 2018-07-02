@@ -30,6 +30,20 @@ var $validator = (function () {
         var msgs = [];
         for (var i = 0; i < rules.length; i++) {
             var rule = rules[i];
+            if (typeof rule === "string") {
+                if (rule === "notNull" || rule === "required") {
+                    rule = { rule: "notNull" };
+                } else if (rule === "number") {
+                    rule = { rule: "number" };
+                }
+            } else if (typeof rule === "object" && rule.toString().startsWith("/")) {
+                // regular expression
+                rule = { rule: "regex", pattern: rule.toString };
+            } else if (typeof rule === "function") {
+                //  function
+                var ruleFun = rule;
+                rule = { rule: ruleFun };
+            }
             var msg;
             if (rule.rule === "notNull" || rule.rule === "required") {
                 msg = validateNotNull(val, rule);
@@ -55,8 +69,9 @@ var $validator = (function () {
     function validateFunction(val, rule) {
         if (typeof val === "undefined" || val === null) return false;
         var valid = rule.rule(val);
-        if (valid) return false;
-        return rule.message;
+        if (valid === true) return false;
+        if (rule.message) return rule.message;
+        return "There is something wrong in this field. ";
     }
 
     function validateRegex(val, rule) {
@@ -75,7 +90,7 @@ var $validator = (function () {
 
     function validateNumber(val, rule) {
         if (typeof val === "undefined" || val === null) return false;
-        var min = rule.min || 0;
+        var min = rule.min || Number.NEGATIVE_INFINITY;
         var max = rule.max || Number.POSITIVE_INFINITY;
         var num = Number.parseFloat(val);
         if (!Number.isNaN(num) && num >= min && num <= max) return false;
