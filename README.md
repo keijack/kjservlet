@@ -2,7 +2,7 @@
 
 ## Nashorn died
 
-**For Nashorn is deprecated, and will be removed from JDK, this Project will not be maintained. **
+**For Nashorn is deprecated, and will be removed from JDK, this Project will not be maintained.**
 
 ## Intro
 
