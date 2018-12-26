@@ -1,4 +1,11 @@
 # KJServlet - A Javascript web framework for Java
+
+## Nashorn died
+
+**For Nashorn is deprecated, and will be removed from JDK, this Project will not be maintained. **
+
+## Intro
+
 KJServlet is lightweight javascript web framework which allows you to write sever side code using Javascript. It is based on Nashorn which is a script engine introduced in Java 8. In other words unlike Node.js which runs in V8 engine,  this framework runs on JVM environment. Which means that you can use all kinds of Java libs to construct you own web applications. 
 
 It is also a very free style framework, it allows you to write your Javascript in many ways. Take writing controller for example, you can use functions, or you can use method in a Javascript object; you can write the response in a callback function, or you can just return a JSON object and let the framework do the rendering. 
