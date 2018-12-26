@@ -1,4 +1,11 @@
 # KJServlet - 一个基于 Java 的 JS web 框架
+
+## Nashorn 已死
+
+**Nashorn 生于Java 8，死于Java 11，由于之后 Nashorn 会被从 JDK 中完全移除，本工程不再进行维护。**
+
+## 简介
+
 KJServlet 是一个轻量级的 Javascript web 框架，该框架基于由 Java 8 开始引入的 Nashorn 引擎，这意味着你所写的 javascript 代码最终会运行在 JVM 的环境下，也正因为如此，你可以非常容易的使用各种已经存在的第三方 Java 类库来构建你的应用程序。
 
 这也是一个比较自由风格的框架，支持你使用不同的代码风格来编写你的逻辑。拿编写 controller 为例，你可以将使用流行的面向函数变成的方式使用函数来当作入口，或许你习惯了面向对象的风格，你也可以使用对象和方法来作为入口；在编写 controller 方法的时候，你可以使用回调（callback）的方式来返回页面数据，也可以直接返回数据由框架来确定如何返回，并且，该框架支持了 MVC，你可以使用非常熟悉的 JSP、Freemarker、Velocity 来编写你的显示层代码。 
